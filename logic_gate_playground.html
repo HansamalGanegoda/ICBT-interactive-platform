@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Logic Gate Electricity Playground</title>
+  <style>
+    :root {
+      --bg: #050505;
+      --panel:#ffffff;
+      --panel-2:#ffffff;
+      --panel-3:#ffffff;
+      --border: #424242;
+      --grid: rgba(255,255,255,.065);
+      --text:#111111;
+      --muted: #d4d4d4;
+      --blue: #3478dc;
+      --blue-2: #2d6fcf;
+      --blue-glow: rgba(52,120,220,.92);
+      --blue-soft: rgba(52,120,220,.18);
+      --wire-off: #bcbcbc;
+      --bulb-off: #353535;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      background:#ffffff;
+      color: var(--text);
+      font-family: Georgia, "Times New Roman", serif;
+      padding:0;
+    }
+
+    button, select { font: inherit; }
+
+    .app {
+      width:100vw;
+      margin:0;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius:0;
+      overflow: hidden;
+      box-shadow: 0 24px 70px rgba(0,0,0,.55);
+    }
+
+    .menu-bar {
+      padding: 17px 20px 0;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .menu-bar button {
+      border: 1px solid #555;
+      background:#ffffff;
+      color:#111;
+      border-radius: 999px;
+      padding: 8px 14px;
+      cursor: pointer;
+      transition: .18s ease;
+    }
+
+    .menu-bar button:hover,
+    .menu-bar button.active {
+      border-color: var(--blue);
+      color:#111;
+      background: var(--blue);
+      box-shadow: 0 0 18px rgba(52,120,220,.28);
+      transform: translateY(-1px);
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      padding: 24px 20px 18px;
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: clamp(22px, 2.5vw, 30px);
+      font-weight: 700;
+    }
+
+    .subtitle {
+      margin: 0;
+      font-size: 18px;
+      color: #f3f3f3;
+    }
+
+    .reset-btn {
+      border: 1px solid #f2f2f2;
+      background: transparent;
+      color:#111;
+      border-radius: 17px;
+      padding: 13px 20px;
+      min-width: 136px;
+      cursor: pointer;
+      transition: .18s ease;
+    }
+
+    .reset-btn:hover {
+      background: #fff;
+      color: #111;
+    }
+
+    .board {
+      margin: 0 20px;
+      border: 1px solid var(--border);
+      border-radius: 25px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 50% 48%, rgba(52,120,220,.04), transparent 35%),
+        linear-gradient(rgba(0,0,0,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,.05) 1px, transparent 1px),
+        #ffffff;
+      background-size: auto, 32px 32px, 32px 32px, auto;
+      position: relative;
+    }
+
+    .board::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      box-shadow: inset 0 0 70px rgba(0,0,0,.26);
+    }
+
+    .circuit {
+      min-height: 500px;
+      padding: 30px 26px;
+      display: grid;
+      grid-template-columns: 250px minmax(320px, 1fr) 250px;
+      gap: 18px;
+      align-items: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .inputs {
+      display: grid;
+      gap: 20px;
+    }
+
+    .input-card,
+    .output-card {
+      border: 1.5px solid var(--blue);
+      border-radius: 21px;
+      background:#ffffff;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .input-card {
+      min-height: 168px;
+      padding: 22px;
+      display: grid;
+      align-content: center;
+    }
+
+    .input-card::before,
+    .output-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      background: radial-gradient(circle at center, rgba(52,120,220,.15), transparent 62%);
+      transition: opacity .24s ease;
+      pointer-events: none;
+    }
+
+    .input-card.on::before,
+    .output-card.on::before { opacity: 1; }
+
+    .card-label {
+      font-size: 19px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .input-value {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 28px;
+      font-weight: 700;
+      margin: 9px 0 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .toggle {
+      width: 92px;
+      height: 48px;
+      margin:0;
+      border-radius: 999px;
+      border: 1.5px solid var(--blue);
+      background: #242424;
+      position: relative;
+      cursor: pointer;
+      transition: .22s ease;
+      z-index: 1;
+    }
+
+    .toggle::after {
+      content: "";
+      position: absolute;
+      width: 38px;
+      height: 38px;
+      top: 4px;
+      left: 5px;
+      border-radius: 50%;
+      background: #8b8b8b;
+      transition: .22s ease;
+    }
+
+    .toggle.on {
+      background: #263142;
+      box-shadow: inset 0 0 14px rgba(52,120,220,.12);
+    }
+
+    .toggle.on::after {
+      transform: translateX(42px);
+      background: var(--blue);
+      box-shadow: 0 0 18px rgba(52,120,220,.45);
+    }
+
+    .gate-stage {
+      min-height: 330px;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+
+    svg {
+      width: 100%;
+      max-width: 520px;
+      overflow: visible;
+    }
+
+    .gate-shape {
+      fill: rgba(37,45,56,.72);
+      stroke: var(--blue);
+      stroke-width: 6;
+      filter:
+        drop-shadow(0 0 6px rgba(52,120,220,.7))
+        drop-shadow(0 0 16px rgba(52,120,220,.18));
+    }
+
+    .gate-shape.dim {
+      filter: drop-shadow(0 0 6px rgba(52,120,220,.35));
+    }
+
+    .wire {
+      fill: none;
+      stroke: var(--wire-off);
+      stroke-width: 7;
+      stroke-linecap: round;
+      transition: .2s ease;
+    }
+
+    .wire.live {
+      stroke: var(--blue);
+      stroke-dasharray: 11 11;
+      animation: currentFlow .62s linear infinite;
+      filter:
+        drop-shadow(0 0 5px rgba(52,120,220,.9))
+        drop-shadow(0 0 12px rgba(52,120,220,.35));
+    }
+
+    .bubble {
+      fill: #242424;
+      stroke: var(--wire-off);
+      stroke-width: 5;
+      transition: .2s ease;
+    }
+
+    .bubble.live {
+      stroke: var(--blue);
+      filter: drop-shadow(0 0 7px rgba(52,120,220,.8));
+    }
+
+    .gate-name {
+      fill: #fff;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 29px;
+      font-weight: 500;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+
+    .electron {
+      fill: var(--blue);
+      opacity: 0;
+      filter: drop-shadow(0 0 6px rgba(52,120,220,1));
+    }
+
+    .electron.live { opacity: 1; }
+
+    .output-card {
+      min-height: 258px;
+      padding: 25px 22px;
+      display: grid;
+      align-content: center;
+    }
+
+    .output-card.on {
+      box-shadow:
+        inset 0 0 28px rgba(52,120,220,.08),
+        0 0 18px rgba(52,120,220,.06);
+    }
+
+    .bulb-wrap {
+      height: 126px;
+      margin: 4px auto 3px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      width: 140px;
+    }
+
+    .bulb-glow {
+      position: absolute;
+      width: 118px;
+      height: 118px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(52,120,220,.62), rgba(52,120,220,.18) 52%, transparent 72%);
+      filter: blur(7px);
+      opacity: 0;
+      transform: scale(.7);
+      transition: .25s ease;
+    }
+
+    .bulb {
+      width: 92px;
+      height: 92px;
+      border-radius: 50%;
+      background: var(--bulb-off);
+      border: 5px solid #555;
+      position: relative;
+      transition: .25s ease;
+      z-index: 2;
+    }
+
+    .bulb::after {
+      content: "";
+      position: absolute;
+      left: 21px;
+      bottom: -19px;
+      width: 43px;
+      height: 27px;
+      border-radius: 9px;
+      background: linear-gradient(#d9d9d9, #bfbfbf);
+      border: 1px solid #acacac;
+    }
+
+    .bulb.on {
+      background: var(--blue-2);
+      border-color: var(--blue-2);
+      box-shadow:
+        0 0 12px rgba(52,120,220,.85),
+        0 0 28px rgba(52,120,220,.72),
+        0 0 52px rgba(52,120,220,.55);
+      animation: bulbPulse 1.15s ease-in-out infinite alternate;
+    }
+
+    .bulb.on + .bulb-glow,
+    .bulb-glow.on {
+      opacity: 1;
+      transform: scale(1);
+      animation: glowPulse 1.15s ease-in-out infinite alternate;
+    }
+
+    .spark {
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--blue);
+      opacity: 0;
+      box-shadow: 0 0 9px rgba(52,120,220,.85);
+    }
+
+    .output-card.on .spark { animation: spark 1.4s ease-in-out infinite; }
+    .spark.s1 { top: 16px; left: 50px; }
+    .spark.s2 { top: 7px; right: 50px; animation-delay: .25s; }
+    .spark.s3 { bottom: 52px; right: 28px; animation-delay: .55s; }
+
+    .output-value {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      margin-top: 1px;
+    }
+
+    .output-state {
+      font-size: 18px;
+      margin-top: 3px;
+    }
+
+    .down-row {
+      margin: 0 20px;
+      height: 74px;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+
+    .down-row::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      width: 1px;
+      height: 23px;
+      background: #4a4a4a;
+    }
+
+    .down-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid #4b4b4b;
+      background: #242424;
+      color:#111;
+      display: grid;
+      place-items: center;
+      font-size: 29px;
+      cursor: pointer;
+      z-index: 1;
+    }
+
+    .details {
+      margin: -18px 20px 20px;
+      border: 1px solid #3f3f3f;
+      border-radius: 22px;
+      overflow: hidden;
+      background:#fff;
+      max-height: 0;
+      opacity: 0;
+      transition: max-height .35s ease, opacity .25s ease, margin .35s ease;
+    }
+
+    .details.open {
+      max-height: 650px;
+      opacity: 1;
+      margin-top: 0;
+    }
+
+    .expression {
+      padding: 20px;
+      border-bottom: 1px solid #3f3f3f;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .expression small {
+      display: block;
+      color: #cfcfcf;
+      margin-bottom: 6px;
+      font-size: 15px;
+    }
+
+    .expression strong {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 20px;
+    }
+
+    .status {
+      color:#111;
+      background: #2b2b2b;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .details-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 18px;
+      padding: 20px;
+    }
+
+    .detail-card {
+      border: 1px solid #444;
+      border-radius: 17px;
+      padding: 18px;
+      background: #252525;
+    }
+
+    .detail-card h2 {
+      margin: 0 0 10px;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 20px;
+    }
+
+    .formula {
+      color: #75a9f4;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+    }
+
+    .description {
+      color: #dedede;
+      line-height: 1.55;
+      margin-bottom: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border-bottom: 1px solid #444;
+    }
+
+    tr.current { background: rgba(52,120,220,.18); }
+
+    @keyframes currentFlow {
+      to { stroke-dashoffset: -22; }
+    }
+
+    @keyframes bulbPulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.045); }
+    }
+
+    @keyframes glowPulse {
+      from { opacity: .72; transform: scale(.96); }
+      to { opacity: 1; transform: scale(1.08); }
+    }
+
+    @keyframes spark {
+      0%,100% { opacity: 0; transform: translateY(0) scale(.5); }
+      35% { opacity: 1; }
+      65% { opacity: .55; transform: translateY(-10px) scale(1); }
+    }
+
+    @media (max-width: 900px) {
+      .circuit {
+        grid-template-columns: 1fr;
+        padding: 26px 18px;
+      }
+      .inputs { grid-template-columns: 1fr 1fr; }
+      .gate-stage { min-height: 250px; }
+      .output-card { width: min(320px,100%); justify-self: center; }
+      .details-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 560px) {
+      body { padding: 0; }
+      .app {
+        width: 100%;
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+      }
+      .topbar { flex-direction: column; }
+      .reset-btn { width: 100%; }
+      .inputs { grid-template-columns: 1fr; }
+      .expression { align-items: flex-start; flex-direction: column; }
+      .status { white-space: normal; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <nav id="gateMenu" class="menu-bar" aria-label="Choose a logic gate"></nav>
+
+    <section class="topbar">
+      <div>
+        <h1 id="title">AND Gate Playground</h1>
+        <p id="subtitle" class="subtitle">Output becomes 1 only when both inputs are 1.</p>
+      </div>
+      <button id="resetBtn" class="reset-btn" type="button">Reset inputs</button>
+    </section>
+
+    <section class="board">
+      <div class="circuit">
+        <div class="inputs">
+          <article id="inputCardA" class="input-card on">
+            <div class="card-label">Input A</div>
+            <div id="inputValueA" class="input-value">1</div>
+            <button id="switchA" class="toggle on" type="button" aria-label="Toggle input A" aria-pressed="true"></button>
+          </article>
+
+          <article id="inputCardB" class="input-card on">
+            <div class="card-label">Input B</div>
+            <div id="inputValueB" class="input-value">1</div>
+            <button id="switchB" class="toggle on" type="button" aria-label="Toggle input B" aria-pressed="true"></button>
+          </article>
+        </div>
+
+        <div class="gate-stage">
+          <svg viewBox="0 0 520 300" role="img" aria-label="Animated logic gate">
+            <path id="wireA" class="wire live" d="M8 85 H145"/>
+            <path id="wireB" class="wire live" d="M8 215 H145"/>
+            <path id="wireOut" class="wire live" d="M365 150 H510"/>
+
+            <g id="andGroup">
+              <path class="gate-shape" d="M145 40 H242 C320 40 365 85 365 150 C365 215 320 260 242 260 H145 Z"/>
+            </g>
+
+            <g id="orGroup" style="display:none">
+              <path class="gate-shape" d="M142 40 C205 60 225 100 225 150 C225 200 205 240 142 260 C187 205 187 95 142 40 Z M142 40 C262 40 325 78 365 150 C325 222 262 260 142 260"/>
+            </g>
+
+            <g id="xorGroup" style="display:none">
+              <path class="gate-shape" d="M160 40 C217 60 237 100 237 150 C237 200 217 240 160 260"/>
+              <path class="gate-shape" d="M138 40 C198 60 218 100 218 150 C218 200 198 240 138 260 C183 205 183 95 138 40 Z M138 40 C258 40 323 78 365 150 C323 222 258 260 138 260"/>
+            </g>
+
+            <g id="notGroup" style="display:none">
+              <path class="gate-shape" d="M155 50 L350 150 L155 250 Z"/>
+            </g>
+
+            <circle id="bubble" class="bubble" cx="383" cy="150" r="17" style="display:none"/>
+            <text id="gateName" class="gate-name" x="255" y="150">AND</text>
+
+            <circle id="electronA" class="electron live" r="8">
+              <animateMotion dur="1s" repeatCount="indefinite" path="M8 85 H145"/>
+            </circle>
+            <circle id="electronB" class="electron live" r="8">
+              <animateMotion dur="1s" repeatCount="indefinite" path="M8 215 H145"/>
+            </circle>
+            <circle id="electronOut" class="electron live" r="8">
+              <animateMotion dur=".9s" repeatCount="indefinite" path="M365 150 H510"/>
+            </circle>
+          </svg>
+        </div>
+
+        <article id="outputCard" class="output-card on">
+          <span class="spark s1"></span>
+          <span class="spark s2"></span>
+          <span class="spark s3"></span>
+          <div class="card-label">Output</div>
+          <div class="bulb-wrap">
+            <div id="bulb" class="bulb on"></div>
+            <div id="bulbGlow" class="bulb-glow on"></div>
+          </div>
+          <div id="outputValue" class="output-value">1</div>
+          <div id="outputState" class="output-state">Circuit is ON</div>
+        </article>
+      </div>
+    </section>
+
+    <div class="down-row">
+      <button id="detailsToggle" class="down-btn" type="button" aria-label="Show truth table and explanation" aria-expanded="false">↓</button>
+    </div>
+
+    <section id="details" class="details">
+      <div class="expression">
+        <div>
+          <small>Current expression</small>
+          <strong id="expressionText">1 AND 1 = 1</strong>
+        </div>
+        <div id="status" class="status">⚡ Electricity flowing</div>
+      </div>
+
+      <div class="details-grid">
+        <article class="detail-card">
+          <h2>Live truth table</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>A</th>
+                <th id="columnB">B</th>
+                <th>Output</th>
+              </tr>
+            </thead>
+            <tbody id="truthBody"></tbody>
+          </table>
+        </article>
+
+        <article class="detail-card">
+          <h2>How it works</h2>
+          <div id="formula" class="formula">Y = A · B</div>
+          <p id="description" class="description">An AND gate produces 1 only when both inputs are 1.</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const gates = {
+      AND: {
+        inputs: 2, shape: "and", inverted: false,
+        subtitle: "Output becomes 1 only when both inputs are 1.",
+        formula: "Y = A · B",
+        description: "An AND gate produces 1 only when both inputs are 1.",
+        fn: (a,b) => a && b
+      },
+      OR: {
+        inputs: 2, shape: "or", inverted: false,
+        subtitle: "Output becomes 1 when at least one input is 1.",
+        formula: "Y = A + B",
+        description: "An OR gate produces 1 when A, B, or both inputs are 1.",
+        fn: (a,b) => a || b
+      },
+      NOT: {
+        inputs: 1, shape: "not", inverted: true,
+        subtitle: "Output becomes the opposite of input A.",
+        formula: "Y = ¬A",
+        description: "A NOT gate reverses its input. A 1 becomes 0, and a 0 becomes 1.",
+        fn: a => !a
+      },
+      NAND: {
+        inputs: 2, shape: "and", inverted: true,
+        subtitle: "Output is 0 only when both inputs are 1.",
+        formula: "Y = ¬(A · B)",
+        description: "A NAND gate is an AND gate followed by inversion.",
+        fn: (a,b) => !(a && b)
+      },
+      NOR: {
+        inputs: 2, shape: "or", inverted: true,
+        subtitle: "Output is 1 only when both inputs are 0.",
+        formula: "Y = ¬(A + B)",
+        description: "A NOR gate is an OR gate followed by inversion.",
+        fn: (a,b) => !(a || b)
+      },
+      XOR: {
+        inputs: 2, shape: "xor", inverted: false,
+        subtitle: "Output becomes 1 when the inputs are different.",
+        formula: "Y = A ⊕ B",
+        description: "An XOR gate produces 1 when exactly one input is 1.",
+        fn: (a,b) => Boolean(a) !== Boolean(b)
+      },
+      XNOR: {
+        inputs: 2, shape: "xor", inverted: true,
+        subtitle: "Output becomes 1 when both inputs are equal.",
+        formula: "Y = ¬(A ⊕ B)",
+        description: "An XNOR gate produces 1 when both inputs have the same value.",
+        fn: (a,b) => Boolean(a) === Boolean(b)
+      }
+    };
+
+    let selected = "AND";
+    let A = true;
+    let B = true;
+
+    const $ = id => document.getElementById(id);
+    const menu = $("gateMenu");
+
+    Object.keys(gates).forEach(name => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = name;
+      button.dataset.gate = name;
+      button.addEventListener("click", () => {
+        selected = name;
+        A = false;
+        B = false;
+        render();
+      });
+      menu.appendChild(button);
+    });
+
+    $("switchA").addEventListener("click", () => {
+      A = !A;
+      render();
+    });
+
+    $("switchB").addEventListener("click", () => {
+      B = !B;
+      render();
+    });
+
+    $("resetBtn").addEventListener("click", () => {
+      A = false;
+      B = false;
+      render();
+    });
+
+    $("detailsToggle").addEventListener("click", () => {
+      const opened = $("details").classList.toggle("open");
+      $("detailsToggle").textContent = opened ? "↑" : "↓";
+      $("detailsToggle").setAttribute("aria-expanded", String(opened));
+    });
+
+    function outputFor(g, a=A, b=B) {
+      return g.inputs === 1 ? Boolean(g.fn(a)) : Boolean(g.fn(a,b));
+    }
+
+    function toggleClass(id, className, state) {
+      $(id).classList.toggle(className, state);
+    }
+
+    function buildTruthTable(g) {
+      const rows = g.inputs === 1 ? [[0],[1]] : [[0,0],[0,1],[1,0],[1,1]];
+      $("truthBody").innerHTML = "";
+
+      rows.forEach(row => {
+        const a = Boolean(row[0]);
+        const b = Boolean(row[1]);
+        const out = outputFor(g, a, b);
+        const current = g.inputs === 1 ? a === A : a === A && b === B;
+        const tr = document.createElement("tr");
+        if (current) tr.className = "current";
+        tr.innerHTML = g.inputs === 1
+          ? `<td>${Number(a)}</td><td style="display:none"></td><td>${Number(out)}</td>`
+          : `<td>${Number(a)}</td><td>${Number(b)}</td><td>${Number(out)}</td>`;
+        $("truthBody").appendChild(tr);
+      });
+    }
+
+    function render() {
+      const gate = gates[selected];
+      const out = outputFor(gate);
+
+      $("title").textContent = `${selected} Gate Playground`;
+      $("subtitle").textContent = gate.subtitle;
+      $("gateName").textContent = selected;
+      $("formula").textContent = gate.formula;
+      $("description").textContent = gate.description;
+
+      [...menu.children].forEach(button => {
+        button.classList.toggle("active", button.dataset.gate === selected);
+      });
+
+      $("inputValueA").textContent = Number(A);
+      $("inputValueB").textContent = Number(B);
+
+      toggleClass("switchA", "on", A);
+      toggleClass("switchB", "on", B);
+      toggleClass("inputCardA", "on", A);
+      toggleClass("inputCardB", "on", B);
+
+      $("switchA").setAttribute("aria-pressed", String(A));
+      $("switchB").setAttribute("aria-pressed", String(B));
+
+      $("inputCardB").style.display = gate.inputs === 1 ? "none" : "";
+      $("wireB").style.display = gate.inputs === 1 ? "none" : "";
+      $("electronB").style.display = gate.inputs === 1 ? "none" : "";
+      $("columnB").style.display = gate.inputs === 1 ? "none" : "";
+
+      $("andGroup").style.display = gate.shape === "and" ? "" : "none";
+      $("orGroup").style.display = gate.shape === "or" ? "" : "none";
+      $("xorGroup").style.display = gate.shape === "xor" ? "" : "none";
+      $("notGroup").style.display = gate.shape === "not" ? "" : "none";
+      $("bubble").style.display = gate.inverted ? "" : "none";
+
+      toggleClass("wireA", "live", A);
+      toggleClass("wireB", "live", B && gate.inputs === 2);
+      toggleClass("wireOut", "live", out);
+      toggleClass("electronA", "live", A);
+      toggleClass("electronB", "live", B && gate.inputs === 2);
+      toggleClass("electronOut", "live", out);
+      toggleClass("bubble", "live", out);
+
+      toggleClass("outputCard", "on", out);
+      toggleClass("bulb", "on", out);
+      toggleClass("bulbGlow", "on", out);
+
+      $("outputValue").textContent = Number(out);
+      $("outputState").textContent = out ? "Circuit is ON" : "Circuit is OFF";
+      $("status").textContent = out ? "⚡ Electricity flowing" : "No output current";
+
+      $("expressionText").textContent = gate.inputs === 1
+        ? `${selected} ${Number(A)} = ${Number(out)}`
+        : `${Number(A)} ${selected} ${Number(B)} = ${Number(out)}`;
+
+      buildTruthTable(gate);
+    }
+
+    render();
+  </script>
+</body>
+</html>
