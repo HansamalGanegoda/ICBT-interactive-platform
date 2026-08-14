@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Computer Systems - Session 2: The Language of 0s and 1s</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<!-- Reveal.js core + WHITE theme (CDN) -->
+<link href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.css" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/theme/white.css" id="theme" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/plugin/highlight/zenburn.css" rel="stylesheet"/>
+<style>
+  /* ---------- 1. Theme tokens & base ---------- */
+  :root{
+    --accent:#2b6cb0;   /* presentation blue */
+    --accent2:#1a365d;  /* deep navy */
+  }
+  html, body { background:#ffffff; }
+  .reveal { font-size: 30px; background:#ffffff; } /* medium base size instead of reveal's default large text */
+  .reveal .slides section { background:#ffffff; color:#1a202c; }
+
+  /* ---------- 2. Typography & text utilities ---------- */
+  .reveal h1, .reveal h2, .reveal h3 { color: var(--accent); }
+  .reveal strong { color: var(--accent2); }
+  .reveal ul { text-align:left; }
+  .subtitle { color: #4a5568; font-size: 0.6em; }
+  .small { font-size:0.5em; color:#4a5568; }
+  .center { text-align:center; }
+
+  /* ---------- 3. Layout: grids & cards ---------- */
+  .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap: 30px; text-align:left; }
+  .grid3 { display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; text-align:left; }
+  .card {
+    background: #f7fafc; border-left: 4px solid var(--accent);
+    padding: 16px 20px; border-radius: 8px; margin: 10px 0; color:#1a202c;
+  }
+  .badge {
+    display:inline-block; padding: 4px 14px; border-radius: 20px;
+    background: var(--accent); color:#fff; font-weight:bold; font-size:0.5em;
+    margin-bottom: 20px;
+  }
+  .timebox {
+    position:absolute; top:14px; right:20px; font-size:0.4em;
+    background:#edf2f7; padding:4px 10px; border-radius:6px; color:var(--accent2);
+    border:1px solid #e2e8f0;
+  }
+  .agenda-list { display:flex; flex-direction:column; gap:12px; max-width:720px; margin:20px auto 0; }
+  .agenda-item {
+    display:flex; align-items:center; gap:16px; text-align:left;
+    background:#f7fafc; border-left:4px solid var(--accent); border-radius:8px;
+    padding:12px 20px; color:#1a202c; font-size:0.55em;
+  }
+  .agenda-num {
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+    width:30px; height:30px; border-radius:50%; background:var(--accent);
+    color:#fff; font-weight:bold;
+  }
+
+  /* ---------- 4. Tables ---------- */
+  .reveal table { font-size: 0.65em; width:100%; border-collapse:collapse; }
+  .reveal table th, .reveal table td { padding: 10px 14px; border-bottom: 1px solid #e2e8f0; }
+  .reveal table th { background:#edf2f7; color:var(--accent); text-align:left; }
+  .reveal table tr:last-child td { border-bottom: none; }
+
+  /* ---------- 5. Quiz options ---------- */
+  .quiz-option {
+    background: #f7fafc; margin:8px 0; padding:10px 16px;
+    border-radius:8px; border:2px solid #e2e8f0; text-align:left; color:#1a202c;
+  }
+  .quiz-option.correct { border-color: #2f855a; background:#f0fff4; }
+
+  /* ---------- 6. Real-image figures ---------- */
+  figure.photo {
+    margin: 6px; display:inline-block; text-align:center; vertical-align:top;
+  }
+  figure.photo img {
+    max-height: 280px; max-width: 340px; border-radius: 8px;
+    border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  }
+  figure.photo figcaption {
+    font-size: 0.42em; color:#4a5568; margin-top:6px;
+  }
+  figure.photo figcaption a { color:#2b6cb0; text-decoration:none; }
+  figure.photo figcaption a:hover { text-decoration:underline; }
+  .photo-row { display:flex; flex-wrap:wrap; justify-content:center; align-items:flex-start; }
+  .hero-photo img {
+    max-height: 380px; border-radius: 10px; border:1px solid #e2e8f0;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+  }
+
+  /* ---------- 7. Hover interactivity ---------- */
+  .card, .agenda-item, .quiz-option, figure.photo img {
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  }
+  .card:hover, .agenda-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  }
+  .quiz-option:hover { border-color: var(--accent); transform: translateX(4px); }
+  figure.photo img:hover { transform: scale(1.06); box-shadow: 0 6px 18px rgba(0,0,0,0.2); }
+  .reveal table tr:hover td { background:#f7fafc; }
+
+  /* ---------- 8. Auto-play entrance animations (no click required) ---------- */
+  @keyframes riseIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
+  @keyframes slideInRight { from { opacity:0; transform:translateX(-20px); } to { opacity:1; transform:none; } }
+  @keyframes popIn { from { opacity:0; transform:scale(0.85); } to { opacity:1; transform:none; } }
+  .reveal .slides section.present .fragment.fade-up { animation: riseIn 0.5s ease both; }
+  .reveal .slides section.present .fragment.fade-right { animation: slideInRight 0.5s ease both; }
+  .reveal .slides section.present .fragment.fade-in,
+  .reveal .slides section.present .fragment.zoom-in { animation: popIn 0.5s ease both; }
+  .reveal .slides section.present .agenda-item { animation: riseIn 0.5s ease both; }
+  /* stagger so items animate in one after another instead of all at once */
+  .reveal .slides section.present li.fragment:nth-of-type(1),
+  .reveal .slides section.present .card.fragment:nth-of-type(1),
+  .reveal .slides section.present tr.fragment:nth-of-type(1),
+  .reveal .slides section.present figure.fragment:nth-of-type(1),
+  .reveal .slides section.present .agenda-item:nth-child(1) { animation-delay: 0.05s; }
+  .reveal .slides section.present li.fragment:nth-of-type(2),
+  .reveal .slides section.present .card.fragment:nth-of-type(2),
+  .reveal .slides section.present tr.fragment:nth-of-type(2),
+  .reveal .slides section.present figure.fragment:nth-of-type(2),
+  .reveal .slides section.present .agenda-item:nth-child(2) { animation-delay: 0.12s; }
+  .reveal .slides section.present li.fragment:nth-of-type(3),
+  .reveal .slides section.present .card.fragment:nth-of-type(3),
+  .reveal .slides section.present tr.fragment:nth-of-type(3),
+  .reveal .slides section.present figure.fragment:nth-of-type(3),
+  .reveal .slides section.present .agenda-item:nth-child(3) { animation-delay: 0.19s; }
+  .reveal .slides section.present li.fragment:nth-of-type(4),
+  .reveal .slides section.present .card.fragment:nth-of-type(4),
+  .reveal .slides section.present tr.fragment:nth-of-type(4),
+  .reveal .slides section.present figure.fragment:nth-of-type(4),
+  .reveal .slides section.present .agenda-item:nth-child(4) { animation-delay: 0.26s; }
+  .reveal .slides section.present li.fragment:nth-of-type(5),
+  .reveal .slides section.present .card.fragment:nth-of-type(5),
+  .reveal .slides section.present .agenda-item:nth-child(5) { animation-delay: 0.33s; }
+  .reveal .slides section.present li.fragment:nth-of-type(6),
+  .reveal .slides section.present .card.fragment:nth-of-type(6),
+  .reveal .slides section.present .agenda-item:nth-child(6) { animation-delay: 0.40s; }
+  .reveal .slides section.present li.fragment:nth-of-type(7),
+  .reveal .slides section.present .agenda-item:nth-child(7) { animation-delay: 0.47s; }
+  .reveal .slides section.present li.fragment:nth-of-type(8),
+  .reveal .slides section.present .agenda-item:nth-child(8) { animation-delay: 0.54s; }
+
+  /* ---------- 9. Moving navigation arrows ---------- */
+  @keyframes bounceRight { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(8px); } }
+  @keyframes bounceLeft { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-8px); } }
+  .reveal .controls .navigate-right { animation: bounceRight 1.4s ease-in-out infinite; }
+  .reveal .controls .navigate-left { animation: bounceLeft 1.4s ease-in-out infinite; }
+
+
+  /* ---------- 10. PPTX-inspired cover ---------- */
+  .reveal .slides section.cover-slide {
+    width: 100%; height: 100%; padding: 0 !important;
+    display: grid !important; grid-template-columns: 55% 45%;
+    text-align: left; overflow: hidden; background:#fff;
+  }
+  .cover-copy {
+    min-width:0; display:flex; flex-direction:column; justify-content:center;
+    padding: 54px 48px 44px 54px; position:relative; z-index:2;
+  }
+  .cover-kicker {
+    display:inline-flex; align-items:center; align-self:flex-start;
+    background:#e8f1ff; color:#2463a9; border-radius:4px;
+    padding:7px 15px; margin-bottom:24px; font-size:0.42em;
+    font-weight:800; letter-spacing:1.7px; text-transform:uppercase;
+  }
+  .cover-title {
+    margin:0 0 17px !important; color:#18212f !important;
+    font-size:2.05em !important; line-height:1.05 !important;
+    letter-spacing:-1.7px; text-transform:none !important;
+  }
+  .cover-title .blue { color:#2b6cb0; }
+  .cover-subtitle {
+    max-width:520px; margin:0 0 30px !important; color:#718096;
+    font-size:0.63em; line-height:1.65;
+  }
+  .cover-presenter {
+    display:flex; align-items:center; gap:16px; border-top:1px solid #e2e8f0;
+    padding-top:19px; max-width:590px;
+  }
+  .cover-avatar {
+    width:82px; height:82px; flex:0 0 82px; border-radius:50%; overflow:hidden;
+    border:3px solid #e2e8f0; background:#fff;
+  }
+  .cover-avatar img { width:100%; height:100%; object-fit:cover; object-position:center 20%; }
+  .cover-name { color:#2d3748; font-size:0.55em; font-weight:800; margin-bottom:5px; }
+  .cover-meta { color:#94a3b8; font-size:0.38em; line-height:1.5; }
+  .cover-visual { position:relative; min-width:0; overflow:hidden; background:#08151d; }
+  .cover-visual img { width:100%; height:100%; object-fit:cover; object-position:center; transform:scale(1.02); }
+  .cover-visual::before {
+    content:""; position:absolute; inset:0; z-index:1;
+    background:linear-gradient(90deg,#fff 0%,rgba(255,255,255,.76) 7%,rgba(255,255,255,0) 27%);
+    pointer-events:none;
+  }
+  .cover-visual::after {
+    content:""; position:absolute; inset:auto 0 0 0; height:28%; z-index:1;
+    background:linear-gradient(0deg,rgba(3,12,18,.38),transparent);
+    pointer-events:none;
+  }
+  .cover-accent-line { position:absolute; left:0; bottom:0; width:120px; height:5px; background:#2b6cb0; z-index:3; }
+  .cover-slide.present .cover-copy { animation:slideInRight .55s ease both; }
+  .cover-slide.present .cover-visual { animation:popIn .65s ease both; }
+
+  /* Cleaner blue treatment across the deck */
+  .reveal h1, .reveal h2, .reveal h3 { letter-spacing:-0.5px; }
+  .card { border-left-color:#2b6cb0; box-shadow:0 2px 9px rgba(15,23,42,.05); }
+  .agenda-item { border-left-color:#2b6cb0; }
+  .agenda-num, .badge { background:#2b6cb0; }
+  .timebox { color:#2b6cb0; }
+  .reveal .progress { color:#2b6cb0; height:4px; }
+  .reveal .controls { color:#2b6cb0; }
+
+  @media (max-width: 760px) {
+    .reveal .slides section.cover-slide { grid-template-columns:1fr; grid-template-rows:58% 42%; }
+    .cover-copy { padding:30px 30px 18px; }
+    .cover-visual { grid-row:1; }
+    .cover-copy { grid-row:2; justify-content:flex-start; }
+    .cover-kicker { margin-bottom:11px; }
+    .cover-title { font-size:1.25em !important; margin-bottom:8px !important; }
+    .cover-subtitle { font-size:.43em; margin-bottom:10px !important; }
+    .cover-presenter { padding-top:9px; }
+    .cover-avatar { width:48px; height:48px; flex-basis:48px; }
+  }
+
+
+/* ===== Professional PPT-style layout override ===== */
+:root{--blue:#2f6fb6;--navy:#172033;--muted:#65758b;--line:#dce4ed;--panel:#f6f8fb;}
+html,body{width:100%;height:100%;margin:0;background:#e9eef3;font-family:Inter,"Segoe UI",Arial,sans-serif;}
+.reveal{font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:21px;color:var(--navy);background:#e9eef3;}
+.reveal .slides{background:#fff;box-shadow:0 0 0 1px #c7d0da,0 12px 42px rgba(15,23,42,.12);}
+.reveal .slides>section:not(.cover-slide){box-sizing:border-box;width:100%;height:100%;padding:28px 42px 52px!important;text-align:left!important;display:block!important;overflow:hidden;background:#fff;color:var(--navy);}
+.reveal .slides>section:not(.cover-slide)>*{text-align:left;}
+.reveal h1,.reveal h2,.reveal h3,.reveal h4,.reveal p,.reveal ul,.reveal ol,.reveal figure,.reveal table{margin-left:0;margin-right:0;}
+.reveal h2{position:relative;margin:0 0 18px!important;padding:0 0 13px 22px!important;border-bottom:2px solid var(--line);font-size:1.58em!important;line-height:1.12!important;font-weight:800!important;letter-spacing:-.5px!important;color:var(--navy)!important;text-transform:none!important;}
+.reveal h2:before{content:"";position:absolute;left:0;top:.48em;width:8px;height:8px;border-radius:50%;background:var(--blue);}
+.reveal h1:not(.cover-title){margin:130px 0 12px!important;font-size:2.4em!important;color:var(--navy)!important;text-align:center!important;text-transform:none!important;}
+.reveal h3{font-size:1.12em!important;color:var(--navy)!important;text-transform:none!important;}
+.reveal h4{font-size:1.08em!important;color:var(--navy)!important;margin:6px 0 9px!important;}
+.reveal p{font-size:1em;line-height:1.55;margin:8px 0 14px;}
+.reveal .subtitle{font-size:1.15em;color:var(--muted);}
+.reveal .small{font-size:.74em!important;color:var(--muted);line-height:1.5;}
+.reveal strong{color:#193a66;font-weight:800;}
+.reveal ul,.reveal ol{margin:5px 0 12px 25px!important;padding:0;max-width:1120px;}
+.reveal li{font-size:1.02em;line-height:1.43;margin:7px 0;padding-left:2px;}
+.reveal li::marker{color:var(--navy);}
+.timebox{top:31px!important;right:42px!important;font-size:.62em!important;padding:6px 13px!important;background:#eef4fa!important;border:1px solid #d8e3ef!important;border-radius:8px!important;color:var(--blue)!important;z-index:4;}
+.grid2,.grid3{width:100%;gap:14px!important;text-align:left!important;align-items:stretch;}
+.grid2{grid-template-columns:1fr 1fr;}.grid3{grid-template-columns:repeat(3,1fr);}
+.card{box-sizing:border-box;margin:4px 0!important;padding:15px 17px!important;background:var(--panel)!important;border:1px solid #dfe6ee!important;border-left:4px solid var(--blue)!important;border-radius:9px!important;box-shadow:none!important;color:var(--navy)!important;font-size:.9em;line-height:1.48;}
+.card:hover{transform:translateX(3px)!important;box-shadow:0 5px 16px rgba(47,111,182,.10)!important;border-color:#bdd2e8!important;}
+.agenda-list{max-width:none!important;width:100%;margin:5px 0 0!important;gap:7px!important;}
+.agenda-item{box-sizing:border-box;width:100%;padding:8px 13px!important;gap:11px!important;font-size:.8em!important;background:var(--panel)!important;border:1px solid #dfe6ee!important;border-left:1px solid #dfe6ee!important;border-radius:7px!important;}
+.agenda-item:hover{transform:translateX(4px)!important;background:#eef5fc!important;border-color:#bdd2e8!important;}
+.agenda-num{width:23px!important;height:23px!important;font-size:.75em!important;background:var(--blue)!important;}
+.reveal table{font-size:.78em!important;width:100%;border-collapse:separate!important;border-spacing:0;background:#fff;border:1px solid #dfe6ee;border-radius:9px;overflow:hidden;}
+.reveal table th,.reveal table td{padding:9px 13px!important;border-bottom:1px solid #e5ebf1!important;text-align:left!important;}
+.reveal table th{background:#eef3f8!important;color:#1f4f86!important;font-weight:800;}
+figure.photo{display:block!important;width:max-content;max-width:100%;margin:10px 0 0!important;text-align:left!important;}
+.photo-row{justify-content:flex-start!important;align-items:flex-start!important;gap:10px;}
+figure.photo img{display:block;max-width:100%!important;max-height:235px!important;width:auto;height:auto;border-radius:8px!important;border:1px solid #dbe3eb!important;box-shadow:0 3px 12px rgba(15,23,42,.10)!important;object-fit:contain;background:#f8fafc;}
+figure.photo figcaption{font-size:.61em!important;color:var(--muted)!important;margin-top:6px!important;text-align:left!important;}
+.hero-photo img{max-height:260px!important;max-width:520px!important;}
+.quiz-option{font-size:.83em!important;margin:6px 0!important;padding:9px 13px!important;border:1px solid #dfe6ee!important;border-radius:7px!important;background:var(--panel)!important;}
+.quiz-option.correct{border-color:#81b79a!important;background:#f0faf4!important;}
+.reveal .slides section.present .fragment,.reveal .slides section .fragment{opacity:1!important;visibility:visible!important;transform:none!important;animation:none!important;}
+.reveal .controls,.reveal .progress,.reveal .slide-number{display:none!important;}
+/* footer and navigation */
+.deck-footer{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:60;font:600 12px Inter,"Segoe UI",Arial,sans-serif;color:#8a9ab0;pointer-events:none;}
+.slide-logo-row{position:absolute;top:16px;left:28px;display:flex;justify-content:flex-start;align-items:center;gap:18px;pointer-events:none;z-index:5;}
+.slide-logo-row img{height:88px;width:auto;object-fit:contain;}
+@media(max-width:850px){.slide-logo-row{top:8px;left:12px;gap:10px}.slide-logo-row img{height:50px}}
+.deck-nav{position:fixed;right:24px;bottom:14px;z-index:61;display:flex;align-items:center;gap:7px;font:600 12px Inter,"Segoe UI",Arial,sans-serif;}
+.deck-nav button{border:1px solid #cfdae6;background:#fff;color:#52657d;border-radius:6px;padding:7px 12px;cursor:pointer;box-shadow:0 1px 3px rgba(15,23,42,.04);}
+.deck-nav button:hover{border-color:var(--blue);color:var(--blue);background:#f4f8fc;}
+.deck-nav button:disabled{opacity:.35;cursor:default;}
+.deck-nav .zoom-label{min-width:42px;text-align:center;color:#8a9ab0;}
+.deck-progress{position:fixed;left:0;bottom:0;height:4px;background:var(--blue);z-index:65;transition:width .25s ease;}
+/* cover remains full-bleed */
+.reveal .slides section.cover-slide{font-size:21px!important;text-align:left!important;}
+.cover-copy{text-align:left!important;padding:58px 54px 50px 58px!important;}
+.cover-title{text-align:left!important;font-size:2.55em!important;letter-spacing:-1.8px!important;}
+.cover-subtitle{text-align:left!important;font-size:1.03em!important;line-height:1.55!important;}
+.cover-name{font-size:.92em!important;}.cover-meta{font-size:.67em!important;}
+.cover-avatar{width:92px!important;height:92px!important;flex-basis:92px!important;}
+/* keep dense image grids neat */
+.photo-row figure.photo img[style*="max-height:120px"]{height:105px!important;width:155px!important;object-fit:cover!important;}
+@media(max-width:850px){.reveal{font-size:18px}.reveal .slides>section:not(.cover-slide){padding:24px 28px 48px!important}.grid3{grid-template-columns:1fr 1fr}.timebox{right:28px!important}.deck-nav{right:10px}}
+
+/* ===== Visual-density upgrade: larger type, stronger imagery, less empty space ===== */
+.reveal{font-size:23px!important;}
+.reveal .slides>section:not(.cover-slide){padding:24px 38px 48px!important;}
+.reveal h2{font-size:1.72em!important;margin-bottom:15px!important;}
+.reveal p{font-size:1.03em;}
+.reveal li{font-size:1.08em;line-height:1.42;margin:9px 0;}
+.visual-split{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);gap:24px;align-items:stretch;height:calc(100% - 78px);}
+.visual-copy{display:flex;flex-direction:column;justify-content:center;min-width:0;}
+.visual-panel{min-width:0;border:1px solid #dce5ef;border-radius:16px;background:linear-gradient(145deg,#f8fbff,#eef5fc);padding:18px;box-shadow:0 10px 28px rgba(35,74,120,.10);display:flex;align-items:center;justify-content:center;}
+.visual-panel img{display:block;width:100%;height:100%;max-height:430px;object-fit:contain;border-radius:12px;}
+.big-step{padding:17px 19px!important;font-size:1em!important;margin:8px 0!important;}
+.big-step strong{display:block;font-size:1.13em;margin-bottom:3px;}
+.brand-grid{width:100%;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.brand-tile{min-height:112px;background:#fff;border:1px solid #dbe5ef;border-radius:14px;display:flex;align-items:center;gap:13px;padding:15px;box-shadow:0 5px 16px rgba(15,23,42,.07);box-sizing:border-box;}
+.brand-tile img{width:49px!important;height:49px!important;object-fit:contain!important;border-radius:0!important;box-shadow:none!important;border:0!important;flex:0 0 49px;}
+.brand-tile b{display:block;font-size:.96em;color:#172033;line-height:1.1;}
+.brand-tile span{display:block;font-size:.65em;color:#65758b;margin-top:5px;line-height:1.25;}
+.ai-discussion{margin-top:14px!important;padding:12px 16px;border-radius:10px;background:#eef5fc;border-left:5px solid #2f6fb6;font-size:.86em!important;color:#284d78!important;}
+.ai-showcase{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:10px;}
+.ai-card{height:180px;box-sizing:border-box;border:1px solid #dce5ef;border-radius:15px;background:#fff;padding:17px 14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center!important;box-shadow:0 7px 20px rgba(15,23,42,.07);}
+.ai-card img{width:67px;height:67px;object-fit:contain;margin-bottom:12px;}
+.ai-card strong{font-size:.88em;color:#172033;}
+.ai-card small{font-size:.61em;color:#65758b;line-height:1.3;margin-top:6px;}
+.chip-mini-gallery{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;}
+.chip-mini-gallery img{width:100%;height:125px;object-fit:cover;border-radius:11px;border:1px solid #dbe3eb;box-shadow:0 4px 12px rgba(15,23,42,.09);}
+.photo-row{gap:14px!important;}
+.photo-row figure.photo{flex:1 1 210px!important;width:auto!important;}
+.photo-row figure.photo img{width:100%!important;height:220px!important;max-height:none!important;object-fit:cover!important;}
+@media(max-width:850px){
+  .reveal{font-size:19px!important;}
+  .visual-split{grid-template-columns:1fr;height:auto;}
+  .brand-grid{grid-template-columns:repeat(2,1fr);}
+  .ai-showcase{grid-template-columns:repeat(2,1fr);}
+  .ai-card{height:150px;}
+}
+
+
+/* ===== FINAL PROFESSIONAL REDESIGN ===== */
+.reveal .slides{border-radius:0;overflow:hidden;}
+.reveal .slides>section:not(.cover-slide){padding:25px 42px 43px!important;}
+.reveal h2{font-size:1.62em!important;margin-bottom:13px!important;}
+.reveal p{line-height:1.42;margin:6px 0 11px;}
+.reveal li{line-height:1.35;margin:7px 0;}
+
+/* Cover: fills the frame cleanly without oversized text or clipped presenter details. */
+.reveal .slides section.cover-slide{grid-template-columns:48% 52%!important;height:720px!important;}
+.cover-copy{padding:48px 42px 42px 54px!important;justify-content:center!important;}
+.cover-kicker{margin-bottom:18px!important;font-size:.53em!important;padding:7px 13px!important;}
+.cover-title{font-size:2.30em!important;line-height:1.02!important;letter-spacing:-1.5px!important;margin-bottom:15px!important;}
+.cover-subtitle{font-size:.88em!important;line-height:1.48!important;margin-bottom:24px!important;max-width:510px!important;}
+.cover-presenter{padding-top:15px!important;gap:13px!important;}
+.cover-avatar{width:72px!important;height:72px!important;flex-basis:72px!important;}
+.cover-name{font-size:.78em!important;}.cover-meta{font-size:.56em!important;}
+.cover-visual img{object-position:center center!important;transform:scale(1.005)!important;}
+.cover-visual::before{background:linear-gradient(90deg,#fff 0%,rgba(255,255,255,.48) 5%,rgba(255,255,255,0) 21%)!important;}
+.cover-visual::after{height:42%!important;background:linear-gradient(0deg,rgba(3,12,18,.48),transparent)!important;}
+
+/* Universal left-content / right-image layout for every slide containing photos. */
+.media-layout{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);gap:28px;height:calc(100% - 68px);align-items:stretch;}
+.media-copy{min-width:0;display:flex;flex-direction:column;justify-content:center;overflow:hidden;}
+.media-stage{min-width:0;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:16px;background:linear-gradient(145deg,#f8fbff,#edf4fb);border:1px solid #d8e4ef;padding:14px;box-shadow:0 10px 28px rgba(15,42,75,.10);}
+.media-stage>figure.photo{width:100%!important;height:100%;margin:0!important;display:flex!important;flex-direction:column;justify-content:center;}
+.media-stage figure.photo a{display:flex;flex:1;min-height:0;align-items:center;justify-content:center;}
+.media-stage figure.photo img{width:100%!important;height:100%!important;max-height:510px!important;object-fit:contain!important;border:0!important;box-shadow:none!important;background:transparent!important;}
+.media-stage figure.photo figcaption{text-align:center!important;margin-top:8px!important;font-size:.55em!important;}
+.media-stage>.photo-row{width:100%;height:100%;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px!important;align-content:center;}
+.media-stage>.photo-row figure.photo{width:100%!important;margin:0!important;}
+.media-stage>.photo-row figure.photo img{width:100%!important;height:190px!important;max-height:none!important;object-fit:cover!important;border-radius:11px!important;}
+.media-stage>.photo-row figure.photo figcaption{text-align:center!important;font-size:.5em!important;}
+.media-copy .grid2{grid-template-columns:1fr 1fr;gap:10px!important;}
+.media-copy .grid3{grid-template-columns:1fr;gap:8px!important;}
+.media-copy .card{font-size:.84em!important;padding:13px 15px!important;}
+.media-copy table{font-size:.65em!important;}
+.media-copy table th,.media-copy table td{padding:7px 9px!important;}
+
+/* What is a computer slide: bigger diagram and compact, readable content. */
+.computer-overview .media-layout{grid-template-columns:1fr 1.05fr;}
+.computer-overview .media-copy{justify-content:flex-start;padding-top:4px;}
+.computer-overview .media-copy .card{font-size:.94em!important;padding:15px 16px!important;}
+.computer-overview .media-copy .small{font-size:.68em!important;line-height:1.43!important;margin-top:10px!important;}
+.computer-overview .media-stage figure.photo img{object-fit:contain!important;max-height:470px!important;}
+
+/* Hook and journey imagery: photographic, large and balanced. */
+.sand-hook .media-stage>.photo-row,.journey-slide .media-stage>.photo-row{grid-template-columns:1fr;grid-template-rows:1fr 1fr;}
+.sand-hook .media-stage>.photo-row figure.photo img{height:205px!important;}
+.journey-slide .media-stage>.photo-row{grid-template-columns:repeat(2,1fr);grid-template-rows:auto;}
+.journey-slide .media-stage>.photo-row figure.photo:first-child{grid-column:1/-1;}
+.journey-slide .media-stage>.photo-row figure.photo img{height:145px!important;}
+
+/* Hardware gallery stays clear instead of six tiny thumbnails. */
+.hardware-slide .media-layout{grid-template-columns:1.08fr .92fr;gap:20px;}
+.hardware-slide .media-stage>.photo-row{grid-template-columns:repeat(2,1fr);gap:9px!important;}
+.hardware-slide .media-stage>.photo-row figure.photo img{height:112px!important;}
+.hardware-slide .media-stage>.photo-row figure.photo figcaption{display:none;}
+
+/* Semiconductor manufacturing: replace the unreadable narrow diagram. */
+.visual-split{grid-template-columns:minmax(0,.93fr) minmax(0,1.07fr)!important;gap:25px!important;height:calc(100% - 69px)!important;}
+.visual-copy{justify-content:flex-start!important;padding-top:2px;}
+.big-step{padding:13px 16px!important;margin:6px 0!important;font-size:.86em!important;}
+.big-step strong{font-size:1.04em!important;}
+.fab-panel{padding:14px!important;display:grid!important;grid-template-rows:1fr 145px;gap:12px;align-items:stretch!important;}
+.fab-flow{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-height:0;}
+.fab-step{display:flex;gap:9px;align-items:flex-start;background:#fff;border:1px solid #dce6ef;border-radius:10px;padding:9px;box-shadow:0 3px 9px rgba(15,23,42,.05);}
+.fab-num{display:flex;align-items:center;justify-content:center;width:30px;height:30px;flex:0 0 30px;border-radius:8px;background:#2f6fb6;color:#fff;font-weight:900;font-size:.58em;}
+.fab-step b{display:block;font-size:.67em;color:#173b67;letter-spacing:.25px;margin-bottom:2px;}
+.fab-step small{display:block;font-size:.48em;line-height:1.28;color:#63758a;}
+.fab-hero{width:100%!important;height:145px!important;max-height:none!important;object-fit:cover!important;border-radius:11px!important;box-shadow:none!important;border:0!important;}
+
+/* AI content should use the whole slide. */
+.brand-grid{grid-template-columns:repeat(2,1fr)!important;gap:10px!important;}
+.brand-tile{min-height:96px!important;padding:13px!important;}
+.brand-tile img{width:55px!important;height:55px!important;flex-basis:55px!important;}
+.ai-showcase{grid-template-columns:repeat(4,1fr)!important;gap:12px!important;}
+.ai-card{height:192px!important;padding:16px!important;}
+.ai-card img{width:76px!important;height:76px!important;}
+
+@media(max-width:850px){.media-layout{grid-template-columns:1fr;height:auto}.media-stage{min-height:300px}.reveal .slides section.cover-slide{grid-template-columns:1fr!important;grid-template-rows:55% 45%!important}.cover-visual{grid-row:1}.cover-copy{grid-row:2;padding:20px 28px!important}.cover-presenter{display:none}.cover-title{font-size:1.55em!important}.cover-subtitle{font-size:.62em!important}.fab-panel{grid-template-rows:auto 130px}.fab-flow{grid-template-columns:1fr 1fr}}
+</style>
+<style id="requested-redesign-v2">
+.cover-avatar{width:96px!important;height:96px!important;flex-basis:96px!important;padding:0!important;box-sizing:border-box!important;background:#fff!important}
+.cover-avatar img{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center!important;transform:none!important;border-radius:50%!important}
+.sand-hook .media-layout{grid-template-columns:.9fr 1.1fr!important;gap:34px!important}.sand-copy{justify-content:center!important}.sand-label,.closing-kicker{font-size:.56em;font-weight:900;letter-spacing:2px;color:#2f6fb6}.sand-big{font-size:1.75em!important;line-height:1.08!important;margin:12px 0!important}.sand-big span{color:#2f6fb6}.sand-path{display:flex;align-items:center;gap:10px;margin:20px 0}.sand-path div{flex:1;background:#f2f6fb;border:1px solid #dbe6f1;padding:14px;border-radius:12px}.sand-path b{display:block;color:#2f6fb6;font-size:.7em}.sand-path span{font-size:.75em;font-weight:800}.sand-path i{font-style:normal;color:#8aa2bd;font-size:1.3em}.sand-question{font-weight:700;color:#294a70;border-left:5px solid #2f6fb6;padding-left:15px!important}.sand-photo-stage{padding:10px!important}.sand-photo-stage figure{height:100%!important}.sand-photo-stage img{width:100%!important;height:100%!important;max-height:500px!important;object-fit:cover!important}
+.quick-analogy .analogy-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:18px}.analogy-card{position:relative;min-height:330px;padding:26px 22px;border:1px solid #dbe5ef;border-radius:18px;background:linear-gradient(145deg,#fff,#f2f7fc);box-shadow:0 10px 25px rgba(23,55,92,.09);box-sizing:border-box}.analogy-icon{font-size:3.1em;line-height:1}.analogy-tag{position:absolute;right:18px;top:18px;background:#2f6fb6;color:#fff;border-radius:20px;padding:6px 12px;font-size:.62em;font-weight:900;letter-spacing:1px}.analogy-card h3{font-size:1.38em!important;margin:20px 0 10px!important}.analogy-card p{font-size:.88em!important;line-height:1.45!important;color:#53657b}.analogy-takeaway{margin-top:18px;padding:17px 20px;background:#eaf3fd;border-radius:12px;border-left:6px solid #2f6fb6;font-size:.91em}
+.debate-question{font-size:1.2em;font-weight:750;line-height:1.3;margin-bottom:14px;max-width:1100px}.debate-layout{display:grid;grid-template-columns:1fr 60px 1.25fr;gap:14px;align-items:center;height:315px}.debate-visual{position:relative;height:100%;overflow:hidden;border-radius:15px;background:#eef3f8;border:1px solid #d7e1ec}.debate-visual img{width:100%;height:100%;object-fit:cover}.phone-visual img{object-fit:contain;background:#fff}.visual-caption{position:absolute;left:0;right:0;bottom:0;padding:11px 14px;background:linear-gradient(transparent,rgba(6,18,34,.9));color:#fff}.visual-caption b,.visual-caption span{display:block}.visual-caption b{font-size:.75em}.visual-caption span{font-size:.52em;color:#dce8f5}.versus{display:flex;align-items:center;justify-content:center;width:54px;height:54px;border-radius:50%;background:#172033;color:#fff;font-weight:900}.apollo-stack{display:grid;grid-template-columns:1fr 1fr;gap:12px;height:100%}.debate-facts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:13px}.debate-facts div{padding:10px 13px;border-radius:10px;background:#f3f6fa;border:1px solid #dde5ee}.debate-facts b,.debate-facts span{display:block}.debate-facts b{font-size:.82em;color:#183d68}.debate-facts span{font-size:.55em;color:#65758b}.debate-facts .answer{background:#193a66}.debate-facts .answer b,.debate-facts .answer span{color:#fff}
+.questions-slide{padding:0!important;background:linear-gradient(135deg,#f7fbff,#eaf2fb)!important;display:flex!important;flex-direction:column!important;justify-content:space-between!important}.questions-panel{display:grid;grid-template-columns:310px 1fr;align-items:center;flex:1;padding:70px 90px}.question-mark{width:240px;height:240px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#2f6fb6;color:#fff;font-size:8em;font-weight:900;box-shadow:0 22px 55px rgba(47,111,182,.25)}.questions-copy h1{margin:10px 0 12px!important;text-align:left!important;font-size:3.35em!important;color:#172033!important}.questions-copy p{font-size:1.12em!important;max-width:680px;color:#61738a}.closing-line{width:110px;height:6px;background:#2f6fb6;border-radius:4px;margin:24px 0}.closing-thanks{font-size:.95em;font-weight:800;color:#2c4c71}.closing-footer{display:flex;justify-content:space-between;padding:18px 55px;background:#172033;color:#fff;font-size:.62em;letter-spacing:1px}.closing-footer strong{color:#fff}
+
+/* Keep the worked-example slide from clipping at the bottom. */
+.reveal .slides>section.binary-addition-slide{padding-top:20px!important;}
+.binary-addition-slide .truth-table{margin-bottom:6px!important;}
+.binary-addition-slide .small{font-size:.66em!important;line-height:1.32!important;margin:6px 0 8px!important;}
+.binary-addition-slide .card{padding:10px 14px!important;margin-top:8px!important;}
+.binary-addition-slide .worked-mono{font-size:.9em;line-height:1.25;}
+</style>
+<style>
+/* ===== IMAGE-LED REDESIGN ADDED ===== */
+.image-feature-layout{display:grid;grid-template-columns:.9fr 1.1fr;gap:28px;height:calc(100% - 72px);align-items:stretch}.image-feature-copy{display:flex;flex-direction:column;justify-content:center;gap:13px}.icon-point{display:flex;gap:15px;align-items:center;padding:15px 17px;border-radius:14px;background:#f4f8fc;border:1px solid #dbe6f1}.icon-point>span{font-size:1.8em}.icon-point b,.icon-point small{display:block}.icon-point b{font-size:.92em;color:#173b67}.icon-point small{font-size:.62em;line-height:1.35;color:#65758b;margin-top:3px}.os-visual-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.os-logo-card{display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:18px;background:linear-gradient(145deg,#fff,#edf5fd);border:1px solid #d6e4f1;box-shadow:0 10px 28px rgba(27,65,109,.1);font-size:.82em}.os-logo-card img{width:105px;height:105px;object-fit:contain;margin-bottom:15px}.visual-card-grid{display:grid;gap:15px;height:calc(100% - 70px)}.visual-card-grid.six{grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr)}.visual-card-grid article{position:relative;overflow:hidden;border-radius:17px;border:1px solid #d8e3ee;background:#edf3f9;box-shadow:0 9px 23px rgba(15,42,75,.1)}.visual-card-grid article img{width:100%;height:100%;object-fit:cover}.visual-card-grid article div{position:absolute;left:0;right:0;bottom:0;padding:28px 15px 13px;background:linear-gradient(transparent,rgba(5,17,31,.9));color:#fff}.visual-card-grid article b,.visual-card-grid article small{display:block;color:#fff}.visual-card-grid article b{font-size:.83em}.visual-card-grid article small{font-size:.57em;margin-top:3px}.network-layout{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;height:calc(100% - 70px)}.network-hero{display:flex;align-items:center;justify-content:center;border-radius:18px;background:#f5f9fd;border:1px solid #d8e4ef;padding:18px}.network-hero img{width:100%;height:100%;object-fit:contain}.network-copy{display:grid;grid-template-columns:1fr 1fr;gap:10px}.network-chip{padding:13px;border-radius:12px;background:#f4f8fc;border:1px solid #dce6ef}.network-chip b,.network-chip span{display:block}.network-chip b{font-size:.85em;color:#1d5793}.network-chip span{font-size:.58em;line-height:1.3;color:#60738a;margin-top:4px}.router-photo{grid-column:1/-1;position:relative;overflow:hidden;border-radius:14px;min-height:160px}.router-photo img{width:100%;height:100%;object-fit:cover}.router-photo span{position:absolute;left:0;right:0;bottom:0;padding:25px 13px 11px;background:linear-gradient(transparent,rgba(0,0,0,.82));color:#fff;font-size:.58em}.visual-quiz-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;height:calc(100% - 80px)}.visual-quiz-grid article{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center!important;border-radius:18px;background:linear-gradient(145deg,#fff,#eef5fc);border:1px solid #d9e5f0;padding:20px;box-shadow:0 10px 26px rgba(15,42,75,.09)}.quiz-image{height:165px;width:100%;display:flex;align-items:center;justify-content:center}.quiz-image img{max-width:100%;max-height:100%;object-fit:contain}.visual-quiz-grid h3{text-align:center!important;font-size:.95em!important;margin:17px 0 8px!important}.visual-quiz-grid p{text-align:center!important;font-size:.72em!important;color:#225b95}.quiz-bits{font:900 1.55em/1 monospace;letter-spacing:5px;color:#2f6fb6;padding:38px 10px;border-radius:14px;background:#eaf3fd;width:100%;box-sizing:border-box}
+</style></head>
+<body>
+<div class="reveal">
+<div class="slides">
+<!-- 1. Cover -->
+<section class="cover-slide" data-background-color="#ffffff">
+<div class="cover-copy">
+<div class="cover-kicker">International Diploma in Information and Communication Technology &middot; Session 2</div>
+<h1 class="cover-title">The Language of<br/>0s and 1s<span class="blue"> <br/> Computer Systems (part 2)</span></h1>
+<p class="cover-subtitle">Binary, logic gates and digital electronics — how billions of tiny 0/1 switches add up to a working computer.</p>
+<div class="cover-presenter">
+<div class="cover-avatar"><img alt="Sasindu Hansamal" src="ppic.png"/></div>
+<div>
+<div class="cover-name">Sasindu Hansamal</div>
+<div class="cover-meta">BSc (Hons) in Information Technology &middot; SLIIT<br/>Computer Systems &middot; Session 2 of the series</div>
+</div>
+</div>
+<div class="cover-accent-line"></div>
+</div>
+<div aria-label="Blue-toned binary code (0s and 1s) background" class="cover-visual">
+<img alt="Binary code made of 0s and 1s" src="https://commons.wikimedia.org/wiki/Special:FilePath/Binary_blue.jpg?width=1600"/>
+</div>
+</section>
+
+<!-- 2. Agenda -->
+<section>
+<h2>Today's Agenda</h2>
+<div class="timebox">~2.5-3 hrs</div>
+<div class="agenda-list">
+<div class="agenda-item"><span class="agenda-num">1</span><span>Quick Recap &amp; Why Binary?</span></div>
+<div class="agenda-item"><span class="agenda-num">2</span><span>The Binary Number System</span></div>
+<div class="agenda-item"><span class="agenda-num">3</span><span>Bits, Bytes &amp; Storage Units</span></div>
+<div class="agenda-item"><span class="agenda-num">4</span><span>ASCII &amp; Unicode</span></div>
+<div class="agenda-item"><span class="agenda-num">5</span><span>Logic Gates</span></div>
+<div class="agenda-item"><span class="agenda-num">6</span><span>Binary Addition &amp; Adders</span></div>
+<div class="agenda-item"><span class="agenda-num">7</span><span>From Transistor to CPU</span></div>
+<div class="agenda-item"><span class="agenda-num">8</span><span>Demo, Quiz &amp; Preview</span></div>
+</div>
+</section>
+
+<!-- ============================================================
+     AGENDA 1 — QUICK RECAP & WHY BINARY? (25 min)
+     ============================================================ -->
+<!-- 3. Quick Recap -->
+<section>
+<h2>Quick Recap: Session 1</h2>
+<div class="grid2">
+<div class="card fragment fade-right"><strong>Computer</strong> — Input &rarr; Process &rarr; Output &rarr; Storage</div>
+<div class="card fragment fade-right"><strong>CPU</strong> — the "brain" that executes instructions</div>
+<div class="card fragment fade-right"><strong>RAM</strong> — fast short-term memory</div>
+<div class="card fragment fade-right"><strong>Storage</strong> — long-term memory (SSD/HDD)</div>
+</div>
+<p class="small fragment fade-up" style="margin-top:12px;">Today's question: <strong>How does a computer actually think and make decisions?</strong> Interactive quiz coming up at the end.</p>
+<div class="card fragment fade-up" style="margin-top:14px; border-left-color:#f0b429;"><strong>💡 Tip</strong> — Every term above is built from just two electrical states: ON and OFF. That's the entire foundation of today's session.</div>
+</section>
+
+<!-- 4. Why binary -->
+<section>
+<h2>Why Computers Only Understand Two Numbers</h2>
+<p class="fragment fade-up">Humans use language. <strong>Computers use electricity.</strong></p>
+<div class="grid3">
+<div class="card fragment fade-right">OFF = <strong>0</strong> — no electricity flowing</div>
+<div class="card fragment fade-right">ON = <strong>1</strong> — electricity flowing</div>
+<div class="card fragment fade-right">No in-between — a wire is never "half on"</div>
+</div>
+<ul class="small fragment fade-up" style="margin-top:8px;">
+<li>Two-state signals are easier to separate from electrical noise.</li>
+<li>Simple ON/OFF switching makes hardware cheaper and faster.</li>
+<li>Complex apps are just huge combinations of these tiny decisions.</li>
+</ul>
+<p class="small fragment fade-up" style="margin-top:10px;">Everything a computer does starts from these two states, combined billions of times per second.</p>
+<div class="card fragment fade-up" style="margin-top:14px; border-left-color:#f0b429;"><strong>💡 Fun fact</strong> — A single transistor is just a tiny ON/OFF switch. Chain billions of them together and you get a CPU.</div>
+</section>
+
+<!-- 5. Light switch example -->
+<section class="media-slide">
+<h2>Example: The Light Switch</h2>
+<p class="fragment fade-up">A light switch has exactly two positions — just like a bit.</p>
+<div class="grid2">
+<div class="card fragment fade-right">Switch <strong>OFF</strong> — represented as <strong>0</strong></div>
+<div class="card fragment fade-right">Switch <strong>ON</strong> — represented as <strong>1</strong></div>
+</div>
+<figure class="photo hero-photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:Binary_counter.gif" target="_blank">
+<img alt="Animated binary counter showing lights toggling on and off" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/Binary_counter.gif"/>
+</a>
+<figcaption>Counting from 0 to 31 using nothing but ON/OFF lights &middot; <a href="https://commons.wikimedia.org/wiki/File:Binary_counter.gif" target="_blank">Wikimedia</a></figcaption>
+</figure>
+</section>
+
+<!-- ============================================================
+     AGENDA 2 — THE BINARY NUMBER SYSTEM (55 min)
+     ============================================================ -->
+<!-- 6. Decimal vs Binary -->
+<section>
+<h2>Decimal (Base 10) vs Binary (Base 2)</h2>
+<div class="grid2">
+<div>
+<h4>Decimal — 10 symbols</h4>
+<p class="small">0, 1, 2, 3, 4, 5, 6, 7, 8, 9 — then carry to the next column</p>
+</div>
+<div>
+<h4>Binary — 2 symbols</h4>
+<p class="small">0, 1, 10, 11, 100, 101 ... — carries much sooner</p>
+</div>
+</div>
+<table class="fragment fade-up">
+<tr><th>Decimal</th><th>Binary</th></tr>
+<tr><td>0</td><td>0</td></tr>
+<tr><td>1</td><td>1</td></tr>
+<tr><td>2</td><td>10</td></tr>
+<tr><td>3</td><td>11</td></tr>
+<tr><td>4</td><td>100</td></tr>
+<tr><td>5</td><td>101</td></tr>
+</table>
+<ul class="small fragment fade-up" style="margin-top:8px;">
+<li>Decimal carries after 9, but binary carries after 1.</li>
+<li>Each move left in binary doubles the place value.</li>
+</ul>
+</section>
+
+<!-- 7. Binary place values -->
+<section>
+<h2>Binary Place Values</h2>
+<p class="fragment fade-up">Just like decimal has 1s, 10s, 100s columns — binary has 1, 2, 4, 8, 16... columns (powers of 2).</p>
+<table class="fragment fade-up">
+<tr><th>128</th><th>64</th><th>32</th><th>16</th><th>8</th><th>4</th><th>2</th><th>1</th></tr>
+</table>
+<p class="fragment fade-up" style="margin-top:14px;">Example: <strong>13</strong> in binary</p>
+<table class="fragment fade-up">
+<tr><th>8</th><th>4</th><th>2</th><th>1</th></tr>
+<tr><td>1</td><td>1</td><td>0</td><td>1</td></tr>
+</table>
+<p class="small fragment fade-up">8 + 4 + 0 + 1 = 13, so 13 in binary is <strong>1101</strong></p>
+</section>
+
+<!-- 8. Binary practice: decimal to binary -->
+<section class="media-slide">
+<h2>Practice: Convert to Binary</h2>
+<p>Using the place-value table, work out the binary form of each number:</p>
+<div class="grid3">
+<div class="card fragment fade-up">7</div>
+<div class="card fragment fade-up">9</div>
+<div class="card fragment fade-up">15</div>
+<div class="card fragment fade-up">25</div>
+<div class="card fragment fade-up">42</div>
+</div>
+<figure class="photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:Decimal_to_Binary_Conversion.gif" target="_blank">
+<img alt="Animated conversion of a decimal number to binary" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/Decimal_to_Binary_Conversion.gif"/>
+</a>
+<figcaption>Converting 357 to binary step by step &middot; <a href="https://commons.wikimedia.org/wiki/File:Decimal_to_Binary_Conversion.gif" target="_blank">Wikimedia</a></figcaption>
+</figure>
+</section>
+
+<!-- 9. Binary to decimal activity -->
+<section>
+<h2>Activity: Binary &rarr; Decimal</h2>
+<p>Convert each binary number back into decimal using the place values.</p>
+<div class="grid2">
+<div class="card fragment fade-right">1001</div>
+<div class="card fragment fade-right">1110</div>
+<div class="card fragment fade-right">101010</div>
+<div class="card fragment fade-right">110011</div>
+</div>
+<div class="card fragment fade-up" style="margin-top:14px; border-left-color:#f0b429;"><strong>💡 Tip</strong> — Start from the leftmost 1 and add up its place value, then move right, adding each place value where you see a 1.</div>
+</section>
+
+<!-- 10. Decimal to binary activity -->
+<section>
+<h2>Activity: Decimal &rarr; Binary</h2>
+<p>Now go the other direction — convert each decimal number into binary.</p>
+<div class="grid3">
+<div class="card fragment fade-up">12</div>
+<div class="card fragment fade-up">18</div>
+<div class="card fragment fade-up">33</div>
+<div class="card fragment fade-up">57</div>
+<div class="card fragment fade-up">100</div>
+</div>
+<div class="card fragment fade-up" style="margin-top:14px; border-left-color:#f0b429;"><strong>💡 Tip</strong> — Repeatedly divide the number by 2, keeping track of each remainder — reading the remainders bottom-to-top gives you the binary answer.</div>
+</section>
+
+<!-- 11. Why binary is reliable -->
+<section class="media-slide">
+<h2>Why Binary Is Reliable</h2>
+<p class="fragment fade-up">Real circuits use voltage to represent bits:</p>
+<div class="grid2">
+<div class="card fragment fade-right"><strong>~5V</strong> — read as ON / 1</div>
+<div class="card fragment fade-right"><strong>~0V</strong> — read as OFF / 0</div>
+</div>
+<p class="small fragment fade-up" style="margin-top:10px;">Electrical noise rarely confuses a clean HIGH from a clean LOW — that's why binary survives in messy, real-world hardware.</p>
+<figure class="photo hero-photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:MicroATX_Motherboard_with_AMD_Athlon_Processor_2_Digon3.jpg" target="_blank">
+<img alt="Real motherboard with visible circuit traces" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/MicroATX_Motherboard_with_AMD_Athlon_Processor_2_Digon3.jpg?width=1600"/>
+</a>
+<figcaption>A real motherboard — millions of tiny ON/OFF signals travel these traces &middot; <a href="https://commons.wikimedia.org/wiki/File:MicroATX_Motherboard_with_AMD_Athlon_Processor_2_Digon3.jpg" target="_blank">Wikimedia</a></figcaption>
+</figure>
+</section>
+
+<!-- ============================================================
+     AGENDA 3 — BITS, BYTES & STORAGE UNITS (20 min)
+     ============================================================ -->
+<!-- 12. Bits and Bytes -->
+<section class="media-slide">
+<h2>Bits and Bytes</h2>
+<div class="grid2">
+<div class="card fragment fade-right"><strong>Bit</strong> — a single 0 or 1</div>
+<div class="card fragment fade-right"><strong>Byte</strong> — a group of 8 bits</div>
+</div>
+<p class="small fragment fade-up" style="margin-top:10px;">A byte can represent 256 different values (2&#8312;) — enough for one letter, number, or symbol.</p>
+<ul class="small fragment fade-up" style="margin-top:8px;">
+<li>File sizes are counted in bytes, KB, MB, GB, and TB.</li>
+<li>Network speed is often shown in bits per second (bps).</li>
+</ul>
+<figure class="photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:Random_Access_Memory_HyperX.jpg" target="_blank">
+<img alt="RAM memory module" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/Random_Access_Memory_HyperX.jpg?width=1600" style="max-height:180px;"/>
+</a>
+<figcaption>A memory module — millions of bytes stored on a single strip &middot; <a href="https://commons.wikimedia.org/wiki/File:Random_Access_Memory_HyperX.jpg" target="_blank">Wikimedia</a></figcaption>
+</figure>
+</section>
+
+<!-- 13. Storage units -->
+<section class="media-slide">
+<h2>Storage Units</h2>
+<table>
+<tr><th>Unit</th><th>Equals</th></tr>
+<tr class="fragment fade-right"><td><strong>1 KB</strong></td><td>1,024 Bytes</td></tr>
+<tr class="fragment fade-right"><td><strong>1 MB</strong></td><td>1,024 KB</td></tr>
+<tr class="fragment fade-right"><td><strong>1 GB</strong></td><td>1,024 MB</td></tr>
+<tr class="fragment fade-right"><td><strong>1 TB</strong></td><td>1,024 GB</td></tr>
+</table>
+<figure class="photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:2023_Dysk_SSD_Kingston_NV2_2TB.jpg" target="_blank">
+<img alt="SSD storage drive" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/2023_Dysk_SSD_Kingston_NV2_2TB.jpg?width=1600" style="max-height:150px;"/>
+</a>
+<figcaption>A 2 TB solid-state drive &middot; <a href="https://commons.wikimedia.org/wiki/File:2023_Dysk_SSD_Kingston_NV2_2TB.jpg" target="_blank">Wikimedia</a></figcaption>
+</figure>
+</section>
+
+<!-- ============================================================
+     AGENDA 4 — ASCII & UNICODE (20 min)
+     ============================================================ -->
+<!-- 14. ASCII -->
+<section class="media-slide">
+<h2>ASCII: Letters Are Numbers</h2>
+<p class="fragment fade-up">Computers store text by mapping every letter to a number — and that number to binary.</p>
+<div class="grid3">
+<div class="card fragment fade-up"><strong>Letter</strong><br/>A</div>
+<div class="card fragment fade-up"><strong>Decimal</strong><br/>65</div>
+<div class="card fragment fade-up"><strong>Binary</strong><br/>01000001</div>
+</div>
+<figure class="photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:ASCII_Table_(suitable_for_printing).svg" target="_blank">
+<img alt="Full printable ASCII character table" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/ASCII_Table_(suitable_for_printing).svg?width=1600"/>
+</a>
+<figcaption>The full ASCII character table &middot; <a href="https://commons.wikimedia.org/wiki/File:ASCII_Table_(suitable_for_printing).svg" target="_blank">Wikimedia</a></figcaption>
+</figure>
+</section>
+
+<!-- 15. ASCII: Hello example -->
+<section>
+<h2>From Words to Binary</h2>
+<p style="font-size:1.1em;" class="fragment fade-in">
+<strong>"Hello"</strong> &nbsp;&rarr;&nbsp; <strong>ASCII codes</strong> &nbsp;&rarr;&nbsp; <strong>Binary</strong>
+</p>
+<table class="fragment fade-up">
+<tr><th>Letter</th><th>H</th><th>e</th><th>l</th><th>l</th><th>o</th></tr>
+<tr><td>ASCII</td><td>72</td><td>101</td><td>108</td><td>108</td><td>111</td></tr>
+<tr><td>Binary</td><td>01001000</td><td>01100101</td><td>01101100</td><td>01101100</td><td>01101111</td></tr>
+</table>
+<p class="small fragment fade-up" style="margin-top:10px;">Every message you send is really just a long string of 0s and 1s underneath.</p>
+<div class="card fragment fade-up" style="margin-top:14px; border-left-color:#f0b429;"><strong>💡 Try it yourself</strong> — Pick your own name and look up each letter's ASCII code. Notice how uppercase and lowercase letters use different numbers!</div>
+</section>
+
+<!-- 16. Unicode -->
+<section>
+<h2>Unicode: Why Emojis Exist</h2>
+<p class="fragment fade-up">ASCII only covers 128 English-focused characters. <strong>Unicode</strong> extends this to over a million characters — covering every language and emoji.</p>
+<p style="font-size:1.3em;" class="fragment fade-in center">&#128512; &nbsp; &#10084;&#65039; &nbsp; &#26085;&#26412; &nbsp; &#3523;&#3538;&#3458;&#3524;&#3517;</p>
+<p class="small fragment fade-up">Computers still store every one of these as binary — Unicode just agreed on a bigger shared numbering system.</p>
+<ul class="small fragment fade-up" style="margin-top:8px;">
+<li>UTF-8 is the most common Unicode encoding on the web.</li>
+<li>Same character, different languages, one universal standard.</li>
+</ul>
+<div class="grid2" style="margin-top:14px;">
+<div class="card fragment fade-right"><strong>ASCII</strong> — 128 characters, 1 byte each</div>
+<div class="card fragment fade-right"><strong>Unicode</strong> — 1M+ characters, up to 4 bytes each</div>
+</div>
+</section>
+
+<!-- ============================================================
+     AGENDA 5 — LOGIC GATES (60 min)
+     ============================================================ -->
+<!-- 17. Logic gates intro -->
+<section>
+<h2>Logic Gates: Binary Becomes Decisions</h2>
+<p class="fragment fade-up">A <strong>logic gate</strong> is a tiny circuit that takes 0/1 inputs and produces a 0/1 output, based on a rule.</p>
+<div class="grid3">
+<div class="card fragment fade-up">NOT</div>
+<div class="card fragment fade-up">AND</div>
+<div class="card fragment fade-up">OR</div>
+<div class="card fragment fade-up">XOR</div>
+<div class="card fragment fade-up">NAND</div>
+<div class="card fragment fade-up">NOR</div>
+</div>
+<ul class="small fragment fade-up" style="margin-top:8px;">
+<li>Inputs are usually called A and B; output is OUT or Q.</li>
+<li>Gate behavior is summarized using a truth table.</li>
+<li>Modern CPUs use billions of these logic decisions per second.</li>
+</ul>
+<p class="small fragment fade-up" style="margin-top:10px;">Combine enough of these tiny switches and you can build an entire computer.</p>
+</section>
+
+<!-- 18. NOT gate -->
+<section class="media-slide">
+<h2>NOT Gate — The Inverter</h2>
+<p>Flips the input: 0 becomes 1, 1 becomes 0.</p>
+<table class="truth-table fragment fade-right">
+<tr><th>A</th><th>OUT</th></tr>
+<tr><td>0</td><td>1</td></tr>
+<tr><td>1</td><td>0</td></tr>
+</table>
+<div class="photo-row">
+<figure class="photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:Not-gate-en.svg" target="_blank">
+<img alt="NOT gate symbol" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/Not-gate-en.svg?width=1000"/>
+</a>
+<figcaption>NOT gate symbol &middot; <a href="https://commons.wikimedia.org/wiki/File:Not-gate-en.svg" target="_blank">Wikimedia</a></figcaption>
+</figure>
+<figure class="photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:CMOS_inverter.svg" target="_blank">
+<img alt="CMOS NOT gate (inverter) diagram" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/CMOS_inverter.svg?width=1200"/>
+</a>
+<figcaption>CMOS circuit for a NOT gate &middot; <a href="https://commons.wikimedia.org/wiki/File:CMOS_inverter.svg" target="_blank">Wikimedia</a></figcaption>
+</figure>
+</div>
+</section>
+
+<!-- 19. AND gate -->
+<section class="media-slide">
+<h2>AND Gate</h2>
+<p>Output is 1 only if <strong>both</strong> inputs are 1.</p>
+<table class="truth-table fragment fade-right">
+<tr><th>A</th><th>B</th><th>OUT</th></tr>
+<tr><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>1</td><td>0</td><td>0</td></tr>
+<tr><td>1</td><td>1</td><td>1</td></tr>
+</table>
+<p class="small fragment fade-up" style="margin-top:10px;"><strong>Real-life example:</strong> A door unlocks only if you have your ID card <strong>AND</strong> your fingerprint matches.</p>
+<div class="photo-row">
+<figure class="photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:AND_ANSI.svg" target="_blank">
+<img alt="AND gate symbol" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/AND_ANSI.svg?width=1000"/>
+</a>
+<figcaption>AND gate symbol &middot; <a href="https://commons.wikimedia.org/wiki/File:AND_ANSI.svg" target="_blank">Wikimedia</a></figcaption>
+</figure>
+<figure class="photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:Cmos_and.svg" target="_blank">
+<img alt="CMOS AND gate circuit" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/Cmos_and.svg?width=1200"/>
+</a>
+<figcaption>CMOS implementation of an AND gate &middot; <a href="https://commons.wikimedia.org/wiki/File:Cmos_and.svg" target="_blank">Wikimedia</a></figcaption>
+</figure>
+</div>
+</section>
+
+<!-- 20. OR gate -->
+<section class="media-slide">
+<h2>OR Gate</h2>
+<p>Output is 1 if <strong>either</strong> input is 1.</p>
+<table class="truth-table fragment fade-right">
+<tr><th>A</th><th>B</th><th>OUT</th></tr>
+<tr><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>1</td></tr>
+<tr><td>1</td><td>0</td><td>1</td></tr>
+<tr><td>1</td><td>1</td><td>1</td></tr>
+</table>
+<p class="small fragment fade-up" style="margin-top:10px;"><strong>Real-life example:</strong> You stay dry if it's not raining <strong>OR</strong> you're holding an umbrella.</p>
+<div class="photo-row">
+<figure class="photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:OR_ANSI_Labelled.svg" target="_blank">
+<img alt="OR gate symbol" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/OR_ANSI_Labelled.svg?width=1000"/>
+</a>
+<figcaption>OR gate symbol &middot; <a href="https://commons.wikimedia.org/wiki/File:OR_ANSI_Labelled.svg" target="_blank">Wikimedia</a></figcaption>
+</figure>
+<figure class="photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:CMOS_OR.svg" target="_blank">
+<img alt="CMOS OR gate circuit" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/CMOS_OR.svg?width=1200"/>
+</a>
+<figcaption>CMOS implementation of an OR gate &middot; <a href="https://commons.wikimedia.org/wiki/File:CMOS_OR.svg" target="_blank">Wikimedia</a></figcaption>
+</figure>
+</div>
+</section>
+
+<!-- 21. XOR gate -->
+<section class="media-slide">
+<h2>XOR Gate — Exclusive OR</h2>
+<p>Output is 1 only if the inputs are <strong>different</strong>.</p>
+<table class="truth-table fragment fade-right">
+<tr><th>A</th><th>B</th><th>OUT</th></tr>
+<tr><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>1</td></tr>
+<tr><td>1</td><td>0</td><td>1</td></tr>
+<tr><td>1</td><td>1</td><td>0</td></tr>
+</table>
+<p class="small fragment fade-up" style="margin-top:10px;">XOR is the key building block of binary addition — you'll see it again in the next section.</p>
+<p class="small fragment fade-up" style="margin-top:10px;"><strong>Real-life example:</strong> A light controlled by two switches (like a staircase light) turns on only when exactly one switch is flipped.</p>
+<div class="photo-row">
+<figure class="photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:XOR_ANSI.svg" target="_blank">
+<img alt="XOR gate symbol" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/XOR_ANSI.svg?width=1000"/>
+</a>
+<figcaption>XOR gate symbol &middot; <a href="https://commons.wikimedia.org/wiki/File:XOR_ANSI.svg" target="_blank">Wikimedia</a></figcaption>
+</figure>
+<figure class="photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:CMOS_XOR_Gate.svg" target="_blank">
+<img alt="CMOS XOR gate circuit" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/CMOS_XOR_Gate.svg?width=1200"/>
+</a>
+<figcaption>CMOS implementation of an XOR gate &middot; <a href="https://commons.wikimedia.org/wiki/File:CMOS_XOR_Gate.svg" target="_blank">Wikimedia</a></figcaption>
+</figure>
+</div>
+</section>
+
+<!-- 22. NAND & NOR gates -->
+<section class="media-slide">
+<h2>NAND &amp; NOR — The Universal Gates</h2>
+<p class="small fragment fade-up">NAND and NOR are <strong>universal gates</strong> — any other gate (and therefore any computer) can be built using only NANDs, or only NORs.</p>
+<div class="photo-row">
+<figure class="photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:NAND_ANSI_Labelled.svg" target="_blank">
+<img alt="NAND gate symbol" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/NAND_ANSI_Labelled.svg?width=1000"/>
+</a>
+<figcaption>NAND — opposite of AND &middot; <a href="https://commons.wikimedia.org/wiki/File:NAND_ANSI_Labelled.svg" target="_blank">Wikimedia</a></figcaption>
+</figure>
+<figure class="photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:Cmos_nand.svg" target="_blank">
+<img alt="CMOS NAND gate circuit" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/Cmos_nand.svg?width=1200"/>
+</a>
+<figcaption>CMOS implementation of a NAND gate &middot; <a href="https://commons.wikimedia.org/wiki/File:Cmos_nand.svg" target="_blank">Wikimedia</a></figcaption>
+</figure>
+<figure class="photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:NOR_ANSI_Labelled.svg" target="_blank">
+<img alt="NOR gate symbol" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/NOR_ANSI_Labelled.svg?width=1000"/>
+</a>
+<figcaption>NOR — opposite of OR &middot; <a href="https://commons.wikimedia.org/wiki/File:NOR_ANSI_Labelled.svg" target="_blank">Wikimedia</a></figcaption>
+</figure>
+<figure class="photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:CMOS_NOR_gate_with_two_inputs.svg" target="_blank">
+<img alt="CMOS NOR gate circuit" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/CMOS_NOR_gate_with_two_inputs.svg?width=1200"/>
+</a>
+<figcaption>CMOS implementation of a NOR gate &middot; <a href="https://commons.wikimedia.org/wiki/File:CMOS_NOR_gate_with_two_inputs.svg" target="_blank">Wikimedia</a></figcaption>
+</figure>
+</div>
+</section>
+
+<!-- 23. Logic gate game -->
+<section>
+<h2>Logic Gate Game</h2>
+<div class="grid2">
+<div class="card fragment fade-right">You need your <strong>Passport AND your Visa</strong> to travel. Can you travel with only one of them?</div>
+<div class="card fragment fade-right">It's <strong>Raining OR</strong> you have an <strong>Umbrella</strong>. Will you stay dry with just one of those true?</div>
+</div>
+<ul class="small fragment fade-up" style="margin-top:8px;">
+<li>First decide which words map to logical operators (AND/OR/NOT).</li>
+<li>Then test all possible input combinations with the truth table.</li>
+</ul>
+<p class="small fragment fade-up" style="margin-top:12px;">Work out the answer using the AND/OR truth tables from the last few slides.</p>
+</section>
+
+<!-- ============================================================
+     AGENDA 6 — BINARY ADDITION & ADDERS (35 min)
+     ============================================================ -->
+<!-- 24. Binary addition -->
+<section class="binary-addition-slide">
+<h2>Binary Addition</h2>
+<table class="truth-table fragment fade-right">
+<tr><th>Sum</th><th>Result</th></tr>
+<tr><td>0 + 0</td><td>0</td></tr>
+<tr><td>0 + 1</td><td>1</td></tr>
+<tr><td>1 + 1</td><td>10 (carry 1)</td></tr>
+<tr><td>1 + 1 + 1</td><td>11 (carry 1)</td></tr>
+</table>
+<p class="small fragment fade-up">Try adding these two binary numbers column by column, carrying just like in decimal.</p>
+<div class="card fragment fade-up" style="margin-top:12px;">
+<strong>Worked example:</strong><br/>
+<span class="worked-mono" style="font-family:monospace;">
+&nbsp;&nbsp;11&nbsp;&nbsp;&nbsp;&nbsp;(carry)<br/>
+&nbsp;&nbsp;1011<br/>
++ 0101<br/>
+------<br/>
+10000
+</span>
+</div>
+<p class="small fragment fade-up" style="margin-top:8px;">Right to left: 1+1=10 (write 0, carry 1), repeat for each column, then bring down the final carry to get <strong>10000</strong>.</p>
+<div class="card fragment fade-up" style="margin-top:14px; border-left-color:#f0b429;"><strong>💡 Tip</strong> — Just like decimal, if a column adds up to 2 or more, write down the remainder and carry 1 to the next column.</div>
+</section>
+
+<!-- 25. Half adder -->
+<section class="media-slide">
+<h2>Half Adder</h2>
+<p class="fragment fade-up">Adds two single bits (A + B), producing a <strong>Sum</strong> and a <strong>Carry</strong>. Built from one XOR gate and one AND gate.</p>
+<table class="truth-table fragment fade-up">
+<tr><th>A</th><th>B</th><th>Sum</th><th>Carry</th></tr>
+<tr><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>0</td><td>1</td><td>1</td><td>0</td></tr>
+<tr><td>1</td><td>0</td><td>1</td><td>0</td></tr>
+<tr><td>1</td><td>1</td><td>0</td><td>1</td></tr>
+</table>
+<div class="photo-row">
+<figure class="photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:Half_Adder.svg" target="_blank">
+<img alt="Half adder circuit diagram" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/Half_Adder.svg?width=1200"/>
+</a>
+<figcaption>Half adder: XOR for Sum, AND for Carry &middot; <a href="https://commons.wikimedia.org/wiki/File:Half_Adder.svg" target="_blank">Wikimedia</a></figcaption>
+</figure>
+<figure class="photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:Halfadder.gif" target="_blank">
+<img alt="Animated half adder in action" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/Halfadder.gif"/>
+</a>
+<figcaption>Half adder in action &middot; <a href="https://commons.wikimedia.org/wiki/File:Halfadder.gif" target="_blank">Wikimedia</a></figcaption>
+</figure>
+</div>
+</section>
+
+<!-- 26. Full adder -->
+<section class="media-slide">
+<h2>Full Adder</h2>
+<p class="fragment fade-up">Adds three bits — A, B, and a <strong>Carry-in</strong> from the previous column. Chain several together and you can add numbers of any size.</p>
+<div class="photo-row">
+<figure class="photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:Full-adder_logic_diagram.svg" target="_blank">
+<img alt="Full adder circuit diagram" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/Full-adder_logic_diagram.svg?width=1200"/>
+</a>
+<figcaption>Full adder: two XOR, two AND, one OR gate &middot; <a href="https://commons.wikimedia.org/wiki/File:Full-adder_logic_diagram.svg" target="_blank">Wikimedia</a></figcaption>
+</figure>
+<figure class="photo fragment zoom-in">
+<a href="https://commons.wikimedia.org/wiki/File:Fulladder.gif" target="_blank">
+<img alt="Animated full adder in action" loading="eager" src="https://commons.wikimedia.org/wiki/Special:FilePath/Fulladder.gif"/>
+</a>
+<figcaption>Full adder in action &middot; <a href="https://commons.wikimedia.org/wiki/File:Fulladder.gif" target="_blank">Wikimedia</a></figcaption>
+</figure>
+</div>
+</section>
+
+<!-- ============================================================
+     AGENDA 7 — FROM TRANSISTOR TO CPU (15 min)
+     ============================================================ -->
+<!-- 27. From transistor to CPU -->
+<section>
+<h2>From Transistor to CPU</h2>
+<div class="visual-split">
+<div class="visual-copy">
+<div class="card big-step"><strong>Millions &rarr; Billions</strong>of transistors, each a tiny switch</div>
+<div class="card big-step"><strong>Logic Gates</strong>AND, OR, NOT, XOR, NAND, NOR built from transistors</div>
+<div class="card big-step"><strong>Adders &amp; the ALU</strong>the Arithmetic Logic Unit does all the math and logic</div>
+<div class="card big-step"><strong>CPU</strong>combined with control circuits, this becomes the processor</div>
+<p class="small" style="margin-top:10px;">A modern CPU has over <strong>20 billion transistors</strong>, flipping billions of times per second.</p>
+<ul class="small" style="margin-top:8px;">
+<li>Transistor layer: physical ON/OFF switching.</li>
+<li>Gate layer: logic decisions from transistor networks.</li>
+<li>System layer: CPU coordinates memory, I/O, and timing.</li>
+</ul>
+</div>
+<div class="visual-panel">
+<img alt="Intel 4004 microprocessor, the first commercial CPU" src="https://commons.wikimedia.org/wiki/Special:FilePath/Intel_C4004_b.jpg?width=1200"/>
+</div>
+</div>
+</section>
+
+<!-- 28. Calculator example -->
+<section>
+<h2>How a Calculator Works</h2>
+<p style="font-size:1em;" class="fragment fade-in">
+<strong>Buttons</strong> &nbsp;&rarr;&nbsp; <strong>Binary</strong> &nbsp;&rarr;&nbsp; <strong>Logic Gates</strong> &nbsp;&rarr;&nbsp; <strong>CPU</strong> &nbsp;&rarr;&nbsp; <strong>Answer</strong> &nbsp;&rarr;&nbsp; <strong>Screen</strong>
+</p>
+<p class="small fragment fade-up">Pressing "5 + 3 =" converts each digit to binary, runs it through adders inside the CPU, and converts the binary result back into digits you can read.</p>
+<div class="grid2" style="margin-top:14px;">
+<div class="card fragment fade-right">5 in binary: <strong>0101</strong></div>
+<div class="card fragment fade-right">3 in binary: <strong>0011</strong></div>
+</div>
+<ul class="small fragment fade-up" style="margin-top:8px;">
+<li>Input stage: keypad sends digital signals to the controller.</li>
+<li>Compute stage: ALU performs binary arithmetic operations.</li>
+<li>Output stage: result is translated back to decimal for display.</li>
+</ul>
+<p class="small fragment fade-up" style="margin-top:10px;">Adders inside the CPU add 0101 + 0011 = <strong>1000</strong> (8) — then the screen converts it back to the digit "8".</p>
+</section>
+
+<!-- ============================================================
+     AGENDA 8 — DEMO, QUIZ & PREVIEW (20 min)
+     ============================================================ -->
+<!-- 29. Fun facts -->
+<section>
+<h2>Fun Facts</h2>
+<ul>
+<li class="fragment fade-up">A modern CPU has over <strong>20 billion transistors</strong></li>
+<li class="fragment fade-up">Every transistor behaves like a tiny switch</li>
+<li class="fragment fade-up">Billions of switches change state billions of times per second</li>
+<li class="fragment fade-up">Your smartphone performs billions of calculations every second</li>
+<li class="fragment fade-up">The first electronic computer, ENIAC (1945), weighed 30 tons and had no transistors at all — just vacuum tubes</li>
+<li class="fragment fade-up">Binary was chosen because two-state electrical signals are far more reliable than ten-state ones</li>
+</ul>
+</section>
+
+<!-- 30. Demonstration -->
+<section>
+<h2>Live Demonstration</h2>
+<p>Using an online logic circuit simulator, we'll build together:</p>
+<div class="grid2">
+<div class="card fragment fade-right">AND, OR, and NOT gates</div>
+<div class="card fragment fade-right">A working Half Adder</div>
+</div>
+<p class="small fragment fade-up" style="margin-top:10px;">Recommended tools: Logicly, Logic Gate Simulator, or CircuitVerse.</p>
+</section>
+
+<!-- 31. Quiz -->
+<section class="visual-quiz-slide"><h2>Quick Quiz Time!</h2>
+<div class="visual-quiz-grid">
+<article><div class="quiz-bits">10</div><h3>What is 1 + 1 in binary?</h3><p><b>10 (two)</b></p></article>
+<article><div class="quiz-image"><img alt="AND gate symbol" src="https://commons.wikimedia.org/wiki/Special:FilePath/AND_ANSI.svg?width=900"/></div><h3>Which gate needs both inputs true?</h3><p><b>AND gate</b></p></article>
+<article><div class="quiz-bits">8</div><h3>How many bits make a byte?</h3><p><b>8 bits</b></p></article>
+</div></section>
+
+<!-- 32. Wrap-up & Session 3 preview -->
+<section>
+<h2>Wrap-Up &amp; What's Next</h2>
+<p class="fragment fade-up">Today we learned how computers make decisions — binary, logic gates, and adders.</p>
+<p class="small fragment fade-up" style="margin-top:10px;">Next session: <strong>how the CPU executes instructions, fetches data from RAM, and communicates with every component on the motherboard.</strong></p>
+<div class="grid3" style="margin-top:14px;">
+<div class="card fragment fade-up">Binary numbers</div>
+<div class="card fragment fade-up">Logic gates</div>
+<div class="card fragment fade-up">Adders &amp; the ALU</div>
+</div>
+</section>
+
+<!-- 33. Thank you / Q&A -->
+<section class="questions-slide">
+<div class="questions-panel">
+<div class="question-mark">?</div>
+<div class="questions-copy"><div class="closing-kicker">LET'S DISCUSS</div><h1>Questions?</h1><p>Ask about binary, logic gates, adders, or anything from today's session.</p><div class="closing-line"></div><div class="closing-thanks">Thank you for joining Session 2. See you for Session 3: Inside the CPU.</div></div>
+</div>
+<div class="closing-footer"><span>COMPUTER SYSTEMS &middot; SESSION 2</span><strong>The Language of 0s and 1s</strong></div>
+</section>
+
+</div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4.6.1/dist/reveal.js"></script>
+<script>
+  // Build a consistent professional two-column composition on every photo slide.
+  document.querySelectorAll('.slides > section.media-slide').forEach(section=>{
+    if(section.querySelector(':scope > .media-layout')) return;
+    const title=section.querySelector(':scope > h2');
+    const fixed=[...section.querySelectorAll(':scope > .timebox')];
+    const children=[...section.children].filter(el=>el!==title && !fixed.includes(el));
+    const media=children.filter(el=>el.matches('figure.photo,.photo-row'));
+    if(!media.length) return;
+    const layout=document.createElement('div'); layout.className='media-layout';
+    const copy=document.createElement('div'); copy.className='media-copy';
+    const stage=document.createElement('div'); stage.className='media-stage';
+    children.forEach(el=>(media.includes(el)?stage:copy).appendChild(el));
+    layout.append(copy,stage); section.appendChild(layout);
+  });
+
+
+  Reveal.initialize({
+    hash:true,
+    center:false,
+    transition:'fade',
+    backgroundTransition:'none',
+    controls:false,
+    progress:false,
+    width:1280,
+    height:720,
+    margin:0,
+    fragments:false,
+    keyboard:true,
+    touch:true
+  });
+
+  document.querySelectorAll('.slides > section.cover-slide').forEach(section=>{
+    if(section.querySelector(':scope > .slide-logo-row')) return;
+    const row=document.createElement('div');
+    row.className='slide-logo-row';
+    row.innerHTML='<img src="icbt.png" alt="ICBT Campus"/><img src="othm.png" alt="OTHM Qualifications"/>';
+    section.appendChild(row);
+  });
+
+  const nav=document.createElement('div');
+  nav.className='deck-nav';
+  nav.innerHTML='<button id="deckPrev" aria-label="Previous slide">&larr; Prev</button><span class="zoom-label">100%</span><button id="deckNext" aria-label="Next slide">Next &rarr;</button>';
+  document.body.appendChild(nav);
+  const footer=document.createElement('div'); footer.className='deck-footer'; document.body.appendChild(footer);
+  const progress=document.createElement('div'); progress.className='deck-progress'; document.body.appendChild(progress);
+  const prev=document.getElementById('deckPrev'), next=document.getElementById('deckNext');
+  prev.onclick=()=>Reveal.prev(); next.onclick=()=>Reveal.next();
+  function updateChrome(){
+    const total=Reveal.getTotalSlides();
+    const current=Reveal.getIndices().h+1;
+    footer.textContent=String(current).padStart(2,'0')+' / '+String(total).padStart(2,'0');
+    progress.style.width=(current/total*100)+'%';
+    prev.disabled=current<=1; next.disabled=current>=total;
+  }
+  Reveal.on('ready',updateChrome); Reveal.on('slidechanged',updateChrome);
+  document.querySelectorAll('img').forEach(img=>{
+    img.addEventListener('error',()=>{
+      img.style.display='none';
+      const box=document.createElement('div');
+      box.style.cssText='width:420px;max-width:100%;height:170px;border:1px dashed #b8c6d6;border-radius:8px;background:#f7f9fc;display:flex;align-items:center;justify-content:center;color:#6b7f96;font:600 15px Inter,Segoe UI,Arial,sans-serif;padding:18px;text-align:center;';
+      box.textContent=img.alt||'Image unavailable';
+      img.parentNode.insertBefore(box,img.nextSibling);
+    },{once:true});
+  });
+</script>
+</body>
+</html>
