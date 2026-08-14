@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Number System Conversion Playground</title>
+<style>
+:root{
+ --blue:#2f7de1;--blue2:#1e64bf;--soft:#edf5ff;--ink:#172033;--muted:#667085;
+ --line:#dce3ec;--green:#149764;--orange:#e58b22;--purple:#7a55cf
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Inter,Segoe UI,Arial,sans-serif;background:#fff;color:var(--ink)}
+button,input{font:inherit}
+button{cursor:pointer}
+.page{position:absolute;inset:0;background:#fff;transition:transform .4s ease,opacity .3s ease}
+#menuPage{padding:28px;overflow:hidden}
+#convertPage{padding:18px 24px;transform:translateX(105%);opacity:0}
+body.converting #menuPage{transform:translateX(-25%);opacity:0;pointer-events:none}
+body.converting #convertPage{transform:none;opacity:1}
+.wrap{max-width:1450px;height:100%;margin:auto;display:flex;flex-direction:column}
+
+.hero{text-align:center;margin:auto 0 28px}
+.eyebrow{display:inline-block;padding:7px 12px;border-radius:999px;background:var(--soft);color:var(--blue2);font-weight:800;font-size:12px}
+.hero h1{font-size:clamp(34px,4vw,58px);margin:14px 0 8px}
+.hero p{color:var(--muted);font-size:18px;margin:0}
+.choose{font-size:17px;font-weight:800;margin:0 0 12px;text-align:center}
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:auto 0}
+.mode-card{border:1px solid var(--line);border-radius:24px;padding:24px;background:#fff;box-shadow:0 12px 35px rgba(25,55,90,.07);transition:.2s;text-align:left}
+.mode-card:hover{transform:translateY(-5px);border-color:var(--blue);box-shadow:0 18px 40px rgba(47,125,225,.13)}
+.icon{width:50px;height:50px;border-radius:15px;background:var(--soft);display:grid;place-items:center;font-size:24px;margin-bottom:16px}
+.mode-card h2{margin:0 0 8px;font-size:23px}
+.mode-card p{color:var(--muted);line-height:1.45;margin:0 0 17px}
+.options{display:grid;gap:8px}
+.option{border:1px solid #d6e5f8;background:#f8fbff;color:var(--blue2);border-radius:12px;padding:10px 12px;font-weight:750;text-align:center}
+.option:hover{background:var(--blue);color:white}
+.footer-note{text-align:center;color:var(--muted);font-size:12px;margin:auto 0 0;padding-top:20px}
+
+.topbar{display:flex;align-items:center;gap:14px;flex:0 0 auto;margin-bottom:10px}
+.back{border:1px solid var(--line);background:#fff;border-radius:12px;padding:8px 12px}
+.titlebox{flex:1}
+.titlebox h1{margin:0;font-size:24px}
+.titlebox p{margin:2px 0 0;color:var(--muted);font-size:12px}
+.direction{padding:7px 11px;border-radius:999px;background:var(--soft);color:var(--blue2);font-weight:800;font-size:11px}
+
+.lab{flex:1;min-height:0;border:1px solid var(--line);border-radius:20px;display:grid;grid-template-columns:285px minmax(0,1fr);overflow:hidden;box-shadow:0 12px 40px rgba(20,45,80,.06)}
+.sidebar{background:#fbfcfe;border-right:1px solid var(--line);padding:15px;overflow:hidden}
+.sidebar label{font-size:12px;font-weight:800;display:block;margin-bottom:5px}
+.input{width:100%;padding:10px 12px;border:1.5px solid #cad5e3;border-radius:11px;font-size:19px;font-weight:800;outline:none}
+.input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,125,225,.1)}
+.go{width:100%;border:0;background:var(--blue);color:white;font-weight:800;padding:10px;border-radius:11px;margin-top:7px}
+.go:hover{background:var(--blue2)}
+.side-title{font-size:11px;font-weight:800;margin:14px 0 6px}
+.examples{display:flex;flex-wrap:wrap;gap:5px}
+.examples button{border:1px solid var(--line);background:white;border-radius:999px;padding:5px 8px;font-size:10px}
+.rule{margin-top:13px;background:var(--soft);border:1px solid #d2e6ff;border-radius:12px;padding:10px;font-size:10px;line-height:1.4;color:#39546f}
+.rule strong{display:block;color:var(--blue2);font-size:11px;margin-bottom:3px}
+.switch-mode{margin-top:10px;border:1px solid var(--line);background:white;border-radius:10px;padding:8px;width:100%;font-size:10px}
+
+.content{min-width:0;min-height:0;padding:12px 16px;overflow:hidden}
+#result{height:100%;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;gap:7px}
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.stat{border:1px solid var(--line);border-radius:11px;padding:7px 10px}
+.stat small{display:block;color:var(--muted);font-size:9px}.stat strong{font-size:16px}
+.explain-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.explain-head h3{font-size:14px;margin:0}.controls{display:flex;gap:5px}
+.controls button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 8px;font-size:9px}
+.controls .primary{background:var(--blue);color:white;border-color:var(--blue)}
+.controls button:disabled{opacity:.35}
+
+.steps{display:grid;gap:5px;align-content:start;min-height:0;overflow:hidden}
+.step{display:grid;grid-template-columns:32px minmax(0,1fr) 78px;gap:7px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:5px 8px;opacity:.14;transition:.25s}
+.step.visible{opacity:1}.step.current{border-color:var(--blue);box-shadow:0 0 0 2px rgba(47,125,225,.08)}
+.stepno{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--blue2);font-weight:800;font-size:10px}
+.eq{font-size:13px;font-weight:800}.eq span{font-size:9px;color:var(--muted);font-weight:500}
+.rem{background:#fff7e8;border:1px solid #ffdc9f;border-radius:8px;text-align:center;padding:3px}.rem small{display:block;font-size:7px;color:#8a662f}.rem b{color:var(--orange)}
+
+.final{border:1px solid #bfe7d6;background:#effaf6;border-radius:12px;padding:8px 11px;display:grid;grid-template-columns:1fr 1.4fr;align-items:center;gap:12px}
+.final small{color:#557469;font-size:9px}.answer{font-size:24px;color:var(--green);font-weight:900;word-break:break-all}
+.rems{display:flex;gap:4px;flex-wrap:wrap;align-items:center;font-size:9px;color:var(--muted)}
+.pill{border:1px solid #d5dfeb;background:white;border-radius:7px;padding:4px 6px;color:var(--ink);font-weight:800}
+
+.power-grid{display:grid;gap:6px;align-content:start;min-height:0;overflow:hidden}
+.power-row{display:grid;grid-template-columns:48px 85px minmax(100px,1fr) 90px;gap:7px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:6px 9px;opacity:.14;transition:.25s}
+.power-row.visible{opacity:1}.power-row.current{border-color:var(--blue)}
+.digit{font-size:20px;font-weight:900;color:var(--blue);text-align:center}
+.power{font-weight:800;font-size:13px}.multiply{font-size:12px}.valuebox{text-align:center;background:#f4f8fd;border-radius:7px;padding:5px;font-weight:800}
+.total{border:1px solid #d9cdf7;background:#f7f3ff;border-radius:12px;padding:9px 11px}
+.total small{font-size:9px;color:#6e5b9d}.sum{font-size:16px;font-weight:900;color:var(--purple);margin-top:2px}
+
+@media(max-width:850px){
+ html,body{overflow:auto;height:auto}.page{position:relative;min-height:100vh}.cards{grid-template-columns:1fr}
+ #convertPage{display:none;transform:none}.converting #menuPage{display:none}.converting #convertPage{display:block}
+ .lab{grid-template-columns:1fr}.sidebar{border-right:0;border-bottom:1px solid var(--line)}.content{overflow:auto}
+}
+
+/* Bigger classroom-readable step text + stronger final outcome */
+.eq{font-size:19px!important;line-height:1.25}
+.eq span{font-size:13px!important}
+.stepno{width:34px!important;height:34px!important;font-size:14px!important}
+.rem{padding:6px!important}
+.rem small{font-size:10px!important}
+.rem b{font-size:20px!important}
+
+.power-row{grid-template-columns:62px 120px minmax(150px,1fr) 120px!important;padding:8px 11px!important}
+.digit{font-size:27px!important}
+.power{font-size:18px!important}
+.multiply{font-size:18px!important;font-weight:700}
+.valuebox{font-size:18px!important;padding:7px!important}
+
+.final{padding:12px 15px!important}
+.final small,.total small{font-size:12px!important}
+.rems{font-size:13px!important;gap:6px!important}
+.pill{padding:6px 9px!important;font-size:16px!important}
+.answer{font-size:38px!important;line-height:1.1}
+
+.total{padding:13px 15px!important}
+.sum{font-size:23px!important;line-height:1.35}
+
+
+/* All steps remain visible; only the current teaching step is highlighted */
+.step,
+.power-row{
+  opacity:1!important;
+  transform:none!important;
+}
+
+.step.current,
+.power-row.current{
+  border-color:#18a66a!important;
+  background:#eefaf5!important;
+  box-shadow:0 0 0 3px rgba(24,166,106,.13)!important;
+}
+
+.step.current .stepno{
+  background:#18a66a!important;
+  color:#fff!important;
+}
+
+.step.current .eq,
+.power-row.current .digit,
+.power-row.current .power,
+.power-row.current .multiply{
+  color:#117a50!important;
+}
+
+.step.current .rem{
+  background:#e6f8ef!important;
+  border-color:#73d5aa!important;
+}
+
+.step.current .rem b,
+.power-row.current .valuebox{
+  color:#117a50!important;
+}
+
+.power-row.current .valuebox{
+  background:#dff6ea!important;
+  border:1px solid #73d5aa!important;
+}
+
+.step:not(.current),
+.power-row:not(.current){
+  background:#fff!important;
+  border-color:var(--line)!important;
+}
+
+</style>
+</head>
+<body>
+<section id="menuPage" class="page">
+ <div class="wrap">
+  <div class="hero">
+   <span class="eyebrow">INTERACTIVE NUMBER SYSTEM LAB</span>
+   <h1>Conversion Playground</h1>
+   <p>Choose a number system and the direction you want to learn.</p>
+  </div>
+  <p class="choose">What do you want to convert?</p>
+  <div class="cards">
+   <article class="mode-card">
+    <div class="icon">01</div><h2>Binary</h2><p>Learn base 2 using division remainders or powers of 2.</p>
+    <div class="options"><button class="option" data-base="2" data-dir="fromdec">Decimal → Binary</button><button class="option" data-base="2" data-dir="todec">Binary → Decimal</button></div>
+   </article>
+   <article class="mode-card">
+    <div class="icon">⑧</div><h2>Octal</h2><p>Learn base 8 using division remainders or powers of 8.</p>
+    <div class="options"><button class="option" data-base="8" data-dir="fromdec">Decimal → Octal</button><button class="option" data-base="8" data-dir="todec">Octal → Decimal</button></div>
+   </article>
+   <article class="mode-card">
+    <div class="icon">0x</div><h2>Hexadecimal</h2><p>Learn base 16 with 0–9, A–F and powers of 16.</p>
+    <div class="options"><button class="option" data-base="16" data-dir="fromdec">Decimal → Hexadecimal</button><button class="option" data-base="16" data-dir="todec">Hexadecimal → Decimal</button></div>
+   </article>
+  </div>
+  <div class="footer-note">Designed for step-by-step classroom learning</div>
+ </div>
+</section>
+
+<section id="convertPage" class="page">
+ <div class="wrap">
+  <header class="topbar">
+   <button id="back" class="back">← Menu</button>
+   <div class="titlebox"><h1 id="pageTitle"></h1><p id="pageSub"></p></div>
+   <div id="directionBadge" class="direction"></div>
+  </header>
+  <div class="lab">
+   <aside class="sidebar">
+    <label id="inputLabel"></label>
+    <input id="numberInput" class="input" autocomplete="off">
+    <button id="convertBtn" class="go">Show step-by-step conversion</button>
+    <div class="side-title">Try an example</div><div id="examples" class="examples"></div>
+    <div class="rule"><strong id="ruleTitle"></strong><span id="ruleText"></span></div>
+    <button id="reverseBtn" class="switch-mode"></button>
+   </aside>
+   <main class="content">
+    <div id="result">
+     <div class="summary">
+      <div class="stat"><small>Starting number</small><strong id="startStat"></strong></div>
+      <div class="stat"><small id="middleLabel"></small><strong id="middleStat"></strong></div>
+      <div class="stat"><small>Steps</small><strong id="stepStat"></strong></div>
+     </div>
+     <div class="explain-head"><h3 id="stepsTitle"></h3><div class="controls"><button id="prev">← Previous</button><button id="next" class="primary">Next →</button><button id="all">Show all</button></div></div>
+     <div id="stepArea"></div>
+     <div id="finalArea"></div>
+    </div>
+   </main>
+  </div>
+ </div>
+</section>
+
+<script>
+let base=2, dir="fromdec", rows=[], visible=1;
+const $=id=>document.getElementById(id);
+const names={2:"Binary",8:"Octal",16:"Hexadecimal"};
+const baseSub={2:"₂",8:"₈",10:"₁₀",16:"₁₆"};
+
+document.querySelectorAll(".option").forEach(b=>b.onclick=()=>openLab(+b.dataset.base,b.dataset.dir));
+$("back").onclick=()=>document.body.classList.remove("converting");
+$("reverseBtn").onclick=()=>openLab(base,dir==="fromdec"?"todec":"fromdec");
+$("convertBtn").onclick=convert;
+$("numberInput").onkeydown=e=>{if(e.key==="Enter")convert()};
+$("prev").onclick=()=>{if(visible>1){visible--;renderSteps()}};
+$("next").onclick=()=>{if(visible<rows.length){visible++;renderSteps()}};
+$("all").onclick=()=>{visible=rows.length;renderSteps()};
+
+function digit(n){return n<10?String(n):"ABCDEF"[n-10]}
+function val(ch){let n=parseInt(ch,16);return Number.isNaN(n)?-1:n}
+
+function openLab(b,d){
+ base=b;dir=d;visible=1;
+ document.body.classList.add("converting");
+ const n=names[base];
+ $("pageTitle").textContent=dir==="fromdec"?`Decimal → ${n}`:`${n} → Decimal`;
+ $("directionBadge").textContent=dir==="fromdec"?`BASE 10 → BASE ${base}`:`BASE ${base} → BASE 10`;
+ $("pageSub").textContent=dir==="fromdec"?`Use repeated division by ${base} and read the remainders upward.`:`Use each digit's place value: digit × ${base}ⁿ.`;
+ $("inputLabel").textContent=dir==="fromdec"?"Enter a decimal whole number":`Enter a ${n.toLowerCase()} number`;
+ $("ruleTitle").textContent=dir==="fromdec"?"Division & remainder method":"Power / place-value method";
+ $("ruleText").textContent=dir==="fromdec"?`Keep dividing by ${base}. Record each remainder, then read the remainders from bottom to top.`:`Starting at the rightmost digit, use powers ${base}⁰, ${base}¹, ${base}² ... Multiply each digit by its power value, then add the results.`;
+ $("reverseBtn").textContent=dir==="fromdec"?`Switch to ${n} → Decimal`:`Switch to Decimal → ${n}`;
+ $("numberInput").value=defaultExample();
+ makeExamples();
+ convert();
+}
+
+function defaultExample(){
+ if(dir==="fromdec") return base===2?"25":base===8?"100":"255";
+ return base===2?"11001":base===8?"144":"FF";
+}
+function exampleList(){
+ if(dir==="fromdec") return ["10","16","25","45","100","255"];
+ if(base===2)return["1010","10000","11001","101101","1100100","11111111"];
+ if(base===8)return["12","20","31","55","144","377"];
+ return["A","10","19","2D","64","FF"];
+}
+function makeExamples(){
+ $("examples").innerHTML="";
+ exampleList().forEach(x=>{let b=document.createElement("button");b.textContent=x;b.onclick=()=>{$("numberInput").value=x;convert()};$("examples").appendChild(b)});
+}
+function validInput(s){
+ if(dir==="fromdec")return /^\d+$/.test(s);
+ if(base===2)return /^[01]+$/i.test(s);
+ if(base===8)return /^[0-7]+$/i.test(s);
+ return /^[0-9A-F]+$/i.test(s);
+}
+function convert(){
+ let raw=$("numberInput").value.trim().toUpperCase();
+ if(!validInput(raw)){alert(`Please enter a valid ${dir==="fromdec"?"decimal":names[base]} number.`);return}
+ visible=1;
+ if(dir==="fromdec") makeDivision(Number(raw)); else makePowers(raw);
+ renderSteps();
+}
+function makeDivision(n){
+ rows=[];
+ if(n===0) rows=[{a:0,q:0,r:0}];
+ else{let x=n;while(x>0){let q=Math.floor(x/base),r=x%base;rows.push({a:x,q,r});x=q}}
+ $("startStat").textContent=n+baseSub[10];
+ $("middleLabel").textContent="Divide by";$("middleStat").textContent=base;
+ $("stepStat").textContent=rows.length;$("stepsTitle").textContent="Division steps";
+}
+function makePowers(s){
+ rows=[];
+ [...s].reverse().forEach((ch,p)=>{let d=val(ch),pow=base**p;rows.push({ch,d,p,pow,product:d*pow})});
+ $("startStat").textContent=s+baseSub[base];
+ $("middleLabel").textContent="Use powers of";$("middleStat").textContent=base;
+ $("stepStat").textContent=rows.length;$("stepsTitle").textContent=`Place values / powers of ${base}`;
+}
+function renderSteps(){
+ $("prev").disabled=visible<=1;$("next").disabled=visible>=rows.length;
+ if(dir==="fromdec")renderDivision();else renderPowers();
+}
+function renderDivision(){
+ let area=document.createElement("div");area.className="steps";
+ rows.forEach((r,i)=>{
+  let e=document.createElement("div");e.className="step"+(i<visible?" visible":"")+(i===visible-1?" current":"");
+  e.innerHTML=`<div class="stepno">${i+1}</div><div class="eq">${r.a} ÷ ${base} = ${r.q} <span>quotient</span></div><div class="rem"><small>remainder</small><b>${digit(r.r)}</b></div>`;area.appendChild(e)
+ });
+ $("stepArea").replaceChildren(area);
+ let answer=rows.map(r=>digit(r.r)).reverse().join("");
+ let shown=visible>=rows.length;
+ $("finalArea").innerHTML=`<div class="final" style="opacity:${shown?1:.22}"><div><small>Read remainders from bottom ↑ to top</small><div class="rems">${rows.slice().reverse().map(r=>`<span class="pill">${digit(r.r)}</span>`).join("")}</div></div><div><small>${names[base]} answer</small><div class="answer">${answer}${baseSub[base]}</div></div></div>`;
+ fitRows();
+}
+function renderPowers(){
+ let area=document.createElement("div");area.className="power-grid";
+ rows.forEach((r,i)=>{
+  let e=document.createElement("div");e.className="power-row"+(i<visible?" visible":"")+(i===visible-1?" current":"");
+  e.innerHTML=`<div class="digit">${r.ch}</div><div class="power">${base}<sup>${r.p}</sup> = ${r.pow}</div><div class="multiply">${r.d} × ${r.pow}</div><div class="valuebox">${r.product}</div>`;area.appendChild(e)
+ });
+ $("stepArea").replaceChildren(area);
+ let total=rows.reduce((a,r)=>a+r.product,0);
+ let expression=rows.slice().reverse().map(r=>`${r.d}×${base}<sup>${r.p}</sup>`).join(" + ");
+ let shown=visible>=rows.length;
+ $("finalArea").innerHTML=`<div class="total" style="opacity:${shown?1:.22}"><small>Add all place values</small><div class="sum">${expression} = ${total}${baseSub[10]}</div></div>`;
+ fitRows();
+}
+function fitRows(){
+ requestAnimationFrame(()=>{
+  let box=$("stepArea").firstElementChild;if(!box)return;
+  let kids=[...box.children],h=box.clientHeight;
+  if(!h||!kids.length)return;
+  let each=Math.max(30,Math.floor((h-(kids.length-1)*5)/kids.length));
+  kids.forEach(k=>{k.style.minHeight=Math.min(66,each)+"px";k.style.padding=each<40?"3px 7px":"5px 8px"})
+ });
+}
+window.onresize=fitRows;
+</script>
+</body>
+</html>
