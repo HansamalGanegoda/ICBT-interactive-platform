@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Air Conditioner Logic Gate Activity</title>
+<style>
+  :root{
+    --bg:#f7fbff;
+    --panel:#ffffff;
+    --ink:#16324a;
+    --muted:#6b8297;
+    --blue:#2f80ed;
+    --cyan:#39c6e8;
+    --green:#20b26b;
+    --green-soft:#e9f9f1;
+    --amber:#f5a623;
+    --line:#d9e6ef;
+    --shadow:0 22px 60px rgba(33,83,120,.13);
+  }
+
+  *{box-sizing:border-box}
+  html,body{width:100%;height:100%;margin:0;overflow:hidden}
+  body{
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    background:
+      radial-gradient(circle at 8% 10%, rgba(57,198,232,.12), transparent 28%),
+      radial-gradient(circle at 92% 88%, rgba(47,128,237,.10), transparent 30%),
+      var(--bg);
+    color:var(--ink);
+  }
+
+  button{font:inherit}
+  .app{width:100vw;height:100vh;position:relative}
+  .page{
+    position:absolute;inset:0;
+    padding:clamp(18px,2.2vw,34px);
+    display:grid;
+    opacity:0;pointer-events:none;
+    transform:translateX(35px) scale(.99);
+    transition:.45s cubic-bezier(.2,.8,.2,1);
+  }
+  .page.active{opacity:1;pointer-events:auto;transform:none}
+
+  .topbar{
+    height:52px;display:flex;align-items:center;justify-content:space-between;
+    margin-bottom:12px;
+  }
+  .brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.2px}
+  .brand-dot{
+    width:34px;height:34px;border-radius:11px;
+    background:linear-gradient(135deg,var(--blue),var(--cyan));
+    display:grid;place-items:center;color:#fff;font-weight:900;box-shadow:0 8px 20px rgba(47,128,237,.24);
+  }
+  .page-pill{
+    padding:8px 13px;border:1px solid var(--line);border-radius:999px;
+    background:rgba(255,255,255,.82);font-size:13px;font-weight:750;color:var(--muted);
+  }
+
+  .question-layout{
+    min-height:0;
+    display:grid;grid-template-columns:1.13fr .87fr;gap:20px;
+  }
+  .card{
+    background:rgba(255,255,255,.94);
+    border:1px solid rgba(215,229,239,.94);
+    border-radius:28px;
+    box-shadow:var(--shadow);
+  }
+
+  .question-card{
+    padding:clamp(24px,3vw,42px);
+    display:flex;flex-direction:column;justify-content:center;min-height:0;
+  }
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;width:max-content;
+    padding:7px 11px;border-radius:999px;background:#eaf4ff;color:var(--blue);
+    font-size:12px;font-weight:850;text-transform:uppercase;letter-spacing:.8px;margin-bottom:13px;
+  }
+  h1{font-size:clamp(28px,3.15vw,50px);line-height:1.02;margin:0 0 15px;letter-spacing:-1.5px}
+  .lead{margin:0 0 18px;color:var(--muted);font-size:clamp(14px,1.2vw,18px);line-height:1.6}
+  .inputs-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:4px 0 16px}
+  .input-chip{padding:13px 14px;border:1px solid var(--line);border-radius:16px;background:#fbfdff}
+  .input-chip b{display:block;font-size:14px;margin-bottom:3px}
+  .input-chip span{font-size:12px;color:var(--muted)}
+  .input-chip{
+    position:relative;
+    overflow:hidden;
+    transition:.18s ease;
+    box-shadow:0 5px 14px rgba(25,65,95,.045);
+  }
+  .input-chip::before{
+    content:"";
+    position:absolute;
+    left:0;top:0;bottom:0;
+    width:5px;
+  }
+  .input-chip:nth-child(1){
+    background:linear-gradient(135deg,#eef6ff,#ffffff);
+    border-color:#bcd8fb;
+  }
+  .input-chip:nth-child(1)::before{background:#2f80ed}
+  .input-chip:nth-child(1) b{color:#1f67c1}
+
+  .input-chip:nth-child(2){
+    background:linear-gradient(135deg,#f5f1ff,#ffffff);
+    border-color:#d7c9ff;
+  }
+  .input-chip:nth-child(2)::before{background:#7b61d1}
+  .input-chip:nth-child(2) b{color:#6549bb}
+
+  .input-chip:nth-child(3){
+    background:linear-gradient(135deg,#fff6e9,#ffffff);
+    border-color:#f5d2a0;
+  }
+  .input-chip:nth-child(3)::before{background:#e89a2b}
+  .input-chip:nth-child(3) b{color:#b66b10}
+
+  .rules{display:grid;gap:8px;margin:0 0 16px;padding:0;list-style:none}
+  .rules li{
+    display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:14px;
+    font-size:14px;line-height:1.45;
+    border:1px solid transparent;
+  }
+  .rules li:nth-child(1){
+    background:linear-gradient(90deg,#edf6ff,#f9fcff);
+    border-color:#c7def8;
+  }
+  .rules li:nth-child(2){
+    background:linear-gradient(90deg,#f4f0ff,#fbfaff);
+    border-color:#d9cdf8;
+  }
+  .rules li:nth-child(1) .num{background:#2f80ed}
+  .rules li:nth-child(2) .num{background:#7b61d1}
+  .num{
+    min-width:24px;height:24px;border-radius:8px;background:var(--ink);color:#fff;
+    display:grid;place-items:center;font-size:12px;font-weight:850;
+  }
+  .tasks{
+    padding:16px 18px;border-radius:18px;
+    background:linear-gradient(135deg,#eef7ff,#f5fbff);
+    border:1px solid #cfe3f3;
+    border-left:5px solid #2f80ed;
+  }
+  .tasks strong{display:block;margin-bottom:7px}
+  .tasks div{font-size:14px;line-height:1.65}
+
+  .visual-card{
+    padding:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;
+  }
+  .visual-card:after{
+      content:"";position:absolute;inset:18px;border-radius:24px;
+      background:linear-gradient(135deg,rgba(108,92,231,.08),rgba(47,128,237,.06),rgba(57,198,232,.10));
+      border:1px solid rgba(57,198,232,.16);
+      z-index:0;
+    }
+  .visual-card:before{
+    content:"";position:absolute;width:330px;height:330px;border-radius:50%;
+    background:radial-gradient(circle,#e7f8ff 0,#f4fbff 58%,transparent 59%);
+    top:50%;left:50%;transform:translate(-50%,-58%);
+  }
+  .ac-wrap{position:relative;z-index:2;width:min(92%,520px)}
+  .ac-svg{width:100%;height:auto;display:block;filter:drop-shadow(0 16px 20px rgba(45,94,126,.12))}
+  .air-wave{animation:wave 1.55s ease-in-out infinite;transform-origin:center}
+  .air-wave:nth-child(2){animation-delay:.22s}
+  .air-wave:nth-child(3){animation-delay:.44s}
+  @keyframes wave{0%,100%{opacity:.28;transform:translateY(0)}50%{opacity:1;transform:translateY(8px)}}
+  .mini-formula{
+    position:relative;z-index:2;margin-top:10px;padding:10px 16px;border-radius:14px;
+    background:#fff;border:1px solid var(--line);font-weight:900;color:var(--blue);font-size:18px;
+  }
+
+  .primary,.secondary,.ghost{
+    border:none;border-radius:14px;padding:12px 17px;font-weight:820;cursor:pointer;
+    transition:.18s ease;display:inline-flex;align-items:center;justify-content:center;gap:8px
+  }
+  .primary{
+    background:linear-gradient(135deg,#1f6fd1,#2f80ed 55%,#2fa9d6);
+    color:#fff;
+    box-shadow:0 9px 22px rgba(47,128,237,.22);
+    border:1px solid rgba(22,87,164,.18);
+  }
+  .primary:hover{transform:translateY(-2px)}
+  .secondary{background:#edf6ff;color:var(--blue)}
+  .ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+  .question-next{
+      position:absolute;right:28px;bottom:26px;z-index:5;
+      background:linear-gradient(135deg,#174f93,#2f80ed) !important;
+      color:#fff !important;
+      box-shadow:0 12px 26px rgba(30,91,160,.25) !important;
+      border:1px solid #1c64b3 !important;
+      font-size:15px;padding:13px 21px;
+    }
+    .question-next:hover{transform:translateY(-2px)}
+
+  /* ANSWER PAGE */
+  .answer-shell{
+    min-height:0;display:grid;grid-template-rows:auto 1fr;
+  }
+  .answer-head{
+    display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:12px;
+  }
+  .head-left{display:flex;align-items:center;gap:10px}
+  .back-btn{width:42px;height:42px;padding:0;border-radius:13px}
+  .answer-title h2{margin:0;font-size:clamp(20px,2vw,30px);letter-spacing:-.6px}
+  .answer-title p{margin:3px 0 0;color:var(--muted);font-size:13px}
+  .tabs{display:flex;gap:8px;padding:5px;background:#eaf1f6;border-radius:15px}
+  .tab{
+    border:0;background:transparent;color:var(--muted);padding:10px 15px;border-radius:11px;
+    font-weight:800;cursor:pointer
+  }
+  .tab.active{background:#fff;color:var(--blue);box-shadow:0 3px 10px rgba(45,90,120,.09)}
+
+  .answer-card{
+    min-height:0;padding:20px;display:grid;overflow:hidden;
+  }
+  .panel{display:none;min-height:0;height:100%}
+  .panel.active{display:grid}
+
+  /* TABLE PANEL */
+  #tablePanel{grid-template-columns:.98fr 1.02fr;gap:18px}
+  .lesson-left,.lesson-right{
+    border:1px solid var(--line);border-radius:22px;background:#fbfdff;min-height:0;
+  }
+  .lesson-left{padding:22px;display:flex;flex-direction:column}
+  .lesson-right{padding:18px;overflow:hidden;display:flex;align-items:center;justify-content:center}
+  .step-label{
+    font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.8px;color:var(--green);
+    margin-bottom:8px
+  }
+  .step-title{font-size:clamp(22px,2.2vw,34px);font-weight:900;letter-spacing:-.7px;margin-bottom:8px}
+  .step-text{color:var(--muted);font-size:14px;line-height:1.55;min-height:46px}
+  .logic-note{
+    margin-top:14px;padding:13px 14px;background:var(--green-soft);border:1px solid #cdeedc;
+    border-radius:16px;font-size:14px;font-weight:760;color:#197a4b
+  }
+  .controls{display:flex;gap:9px;margin-top:auto;padding-top:14px;flex-wrap:wrap}
+  .progress{
+    display:flex;gap:6px;margin-top:14px
+  }
+  .progress span{height:6px;flex:1;background:#dce7ee;border-radius:99px;transition:.2s}
+  .progress span.done{background:var(--green)}
+
+  .truth-wrap{width:100%;max-width:690px}
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:clamp(13px,1.35vw,18px);overflow:hidden;border-radius:18px;border:1px solid var(--line);background:#fff}
+  th,td{text-align:center;padding:clamp(8px,1.1vh,13px);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+  th:last-child,td:last-child{border-right:0}
+  tr:last-child td{border-bottom:0}
+  th{background:#eff7fc;font-size:13px;color:#506a7d;letter-spacing:.25px}
+  td{font-weight:800}
+  tbody tr{opacity:0;transform:translateY(6px);transition:.22s}
+  tbody tr.visible{opacity:1;transform:none}
+  tbody tr.current td{background:var(--green-soft);color:#0b7b48}
+  tbody tr.current td:first-child{box-shadow:inset 4px 0 0 var(--green)}
+  .bit1{color:var(--blue)}
+  .output1{color:var(--green);font-weight:950}
+
+  /* CIRCUIT PANEL */
+  #circuitPanel{grid-template-columns:.82fr 1.18fr;gap:18px}
+  .toggle-board{
+    margin-top:14px;padding:14px;border:1px solid var(--line);background:#fff;border-radius:17px
+  }
+  .toggle-title{font-size:12px;color:var(--muted);font-weight:800;margin-bottom:10px}
+  .toggles{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .toggle{
+    padding:10px 8px;border:1px solid var(--line);background:#f6f9fb;border-radius:13px;cursor:pointer;
+    text-align:center;font-weight:900;color:var(--muted);transition:.18s
+  }
+  .toggle.on{background:#eaf4ff;border-color:#bad8fb;color:var(--blue)}
+  .toggle small{display:block;font-size:10px;font-weight:750;margin-top:3px;color:inherit;opacity:.75}
+  .ac-status{
+    margin-top:10px;padding:10px 12px;border-radius:13px;background:#f3f6f8;font-size:13px;font-weight:850
+  }
+  .ac-status.on{background:var(--green-soft);color:#137746}
+
+  .circuit-canvas{
+    width:100%;height:100%;min-height:390px;position:relative;display:grid;place-items:center;
+    border-radius:22px;background:
+      linear-gradient(#edf3f7 1px,transparent 1px),
+      linear-gradient(90deg,#edf3f7 1px,transparent 1px),
+      #fbfdff;
+    background-size:24px 24px;border:1px solid var(--line);overflow:hidden
+  }
+  .circuit-svg{width:96%;height:92%}
+  .stage{opacity:.10;transition:.4s ease}
+  .stage.show{opacity:1}
+  .wire{stroke:#9fb2c0;stroke-width:5;fill:none;stroke-linecap:round;stroke-linejoin:round;transition:.25s}
+  .wire.live{stroke:var(--green);filter:drop-shadow(0 0 4px rgba(32,178,107,.25))}
+  .gate-shape{fill:#fff;stroke:#294a62;stroke-width:4}
+  .gate-label{font-size:18px;font-weight:900;fill:#294a62;text-anchor:middle;dominant-baseline:middle}
+  .input-label{font-size:19px;font-weight:950;fill:#294a62}
+  .bit-label{font-size:15px;font-weight:900;fill:#6a8294}
+  .output-label{font-size:18px;font-weight:950;fill:#294a62}
+  .node{fill:#fff;stroke:#294a62;stroke-width:3}
+  .node.live{fill:var(--green);stroke:var(--green)}
+  .ac-mini{transition:.3s}
+  .ac-mini.on .ac-body{fill:#e8fbf3;stroke:var(--green)}
+  .ac-mini.on .ac-light{fill:var(--green)}
+  .air-stream{opacity:0;transition:.3s}
+  .ac-mini.on .air-stream{opacity:1;animation:stream 1.2s ease-in-out infinite}
+  @keyframes stream{0%,100%{transform:translateY(0);opacity:.35}50%{transform:translateY(6px);opacity:1}}
+
+  @media(max-width:900px){
+    .question-layout,#tablePanel,#circuitPanel{grid-template-columns:1fr}
+    .visual-card{display:none}
+    .page{overflow:auto}
+    html,body{overflow:auto}
+    .question-next{position:fixed}
+  }
+</style>
+
+<style id="larger-professional-type">
+  /* Larger teaching-friendly typography */
+  .brand{font-size:20px}
+  .page-pill{font-size:15px}
+
+  .question-card{
+    padding:clamp(24px,2.6vw,38px);
+  }
+  .eyebrow{
+    font-size:14px;
+    padding:8px 13px;
+  }
+  h1{
+    font-size:clamp(38px,4.35vw,66px);
+    line-height:1.02;
+    margin-bottom:18px;
+  }
+  .lead{
+    font-size:clamp(18px,1.55vw,23px);
+    line-height:1.55;
+    margin-bottom:22px;
+  }
+
+  .input-chip{
+    padding:16px 18px;
+  }
+  .input-chip b{
+    font-size:17px;
+    margin-bottom:6px;
+  }
+  .input-chip span{
+    font-size:15px;
+  }
+
+  .rules{
+    gap:10px;
+  }
+  .rules li{
+    font-size:17px;
+    line-height:1.45;
+    padding:14px 16px;
+  }
+  .num{
+    min-width:30px;
+    height:30px;
+    border-radius:9px;
+    font-size:15px;
+  }
+
+  .tasks{
+    padding:18px 22px;
+  }
+  .tasks strong{
+    font-size:20px;
+    margin-bottom:8px;
+  }
+  .tasks div{
+    font-size:17px;
+    line-height:1.7;
+  }
+
+  .mini-formula{
+    font-size:21px;
+    padding:11px 18px;
+  }
+
+  .primary,.secondary,.ghost{
+    font-size:15px;
+    padding:13px 18px;
+  }
+  .question-next{
+    font-size:17px !important;
+    padding:14px 24px !important;
+  }
+
+  /* Answer page typography */
+  .answer-title h2{
+    font-size:clamp(27px,2.5vw,38px);
+  }
+  .answer-title p{
+    font-size:15px;
+  }
+  .tab{
+    font-size:15px;
+    padding:11px 17px;
+  }
+  .step-label{
+    font-size:14px;
+  }
+  .step-title{
+    font-size:clamp(28px,2.7vw,40px);
+  }
+  .step-text{
+    font-size:17px;
+    line-height:1.6;
+    min-height:58px;
+  }
+  .logic-note{
+    font-size:17px;
+    padding:15px 16px;
+  }
+  .toggle-title{
+    font-size:14px;
+  }
+  .toggle{
+    font-size:16px;
+    padding:12px 9px;
+  }
+  .toggle small{
+    font-size:11px;
+  }
+  .ac-status{
+    font-size:15px;
+  }
+
+  table{
+    font-size:clamp(17px,1.65vw,22px);
+  }
+  th{
+    font-size:15px;
+  }
+  th,td{
+    padding:clamp(10px,1.25vh,15px);
+  }
+
+  @media (max-height: 820px) and (min-width: 901px){
+    h1{font-size:clamp(35px,3.8vw,56px)}
+    .lead{font-size:18px;margin-bottom:16px}
+    .input-chip{padding:13px 15px}
+    .input-chip b{font-size:16px}
+    .input-chip span{font-size:14px}
+    .rules li{font-size:16px;padding:11px 14px}
+    .tasks{padding:14px 18px}
+    .tasks strong{font-size:18px}
+    .tasks div{font-size:16px;line-height:1.55}
+  }
+</style>
+
+
+<style id="question-page-fit-fix">
+  /* Keep the complete question inside the white card */
+  #questionPage{
+    padding:18px 20px 22px;
+  }
+
+  #questionPage .topbar{
+    height:48px;
+    margin-bottom:10px;
+  }
+
+  #questionPage .question-layout{
+    min-height:0;
+    height:calc(100vh - 98px);
+  }
+
+  #questionPage .question-card{
+    justify-content:flex-start;
+    padding:clamp(22px,2.2vw,34px);
+    overflow:hidden;
+  }
+
+  #questionPage .eyebrow{
+    margin-bottom:10px;
+  }
+
+  #questionPage h1{
+    font-size:clamp(38px,3.7vw,58px);
+    line-height:1.04;
+    margin:0 0 12px;
+  }
+
+  #questionPage .lead{
+    font-size:clamp(17px,1.35vw,21px);
+    line-height:1.48;
+    margin:0 0 16px;
+  }
+
+  #questionPage .inputs-grid{
+    margin:0 0 12px;
+    gap:10px;
+  }
+
+  #questionPage .input-chip{
+    padding:13px 16px;
+  }
+
+  #questionPage .input-chip b{
+    font-size:16px;
+    margin-bottom:4px;
+  }
+
+  #questionPage .input-chip span{
+    font-size:14px;
+  }
+
+  #questionPage .rules{
+    gap:8px;
+    margin:0 0 12px;
+  }
+
+  #questionPage .rules li{
+    font-size:16px;
+    line-height:1.35;
+    padding:11px 14px;
+  }
+
+  #questionPage .num{
+    min-width:29px;
+    height:29px;
+    font-size:14px;
+  }
+
+  #questionPage .tasks{
+    padding:13px 18px 14px;
+    margin-top:0;
+  }
+
+  #questionPage .tasks strong{
+    font-size:18px;
+    margin-bottom:4px;
+  }
+
+  #questionPage .tasks div{
+    font-size:16px;
+    line-height:1.48;
+  }
+
+  #questionPage .visual-card{
+    min-height:0;
+  }
+
+  /* On shorter classroom/projector screens, tighten vertical rhythm rather
+     than allowing any question content to leave the card. */
+  @media (max-height:900px) and (min-width:901px){
+    #questionPage h1{
+      font-size:clamp(36px,3.35vw,52px);
+    }
+    #questionPage .lead{
+      font-size:17px;
+      margin-bottom:12px;
+    }
+    #questionPage .input-chip{
+      padding:11px 14px;
+    }
+    #questionPage .rules li{
+      padding:9px 13px;
+      font-size:15px;
+    }
+    #questionPage .tasks{
+      padding:11px 16px;
+    }
+    #questionPage .tasks strong{
+      font-size:17px;
+    }
+    #questionPage .tasks div{
+      font-size:15px;
+      line-height:1.4;
+    }
+  }
+</style>
+
+</head>
+<body>
+<div class="app">
+
+  <!-- PAGE 1: QUESTION -->
+  <section class="page active" id="questionPage">
+    <div class="topbar">
+      <div class="brand"><div class="brand-dot">∧</div> Digital Logic Exercise</div>
+      <div class="page-pill">Question • Air Conditioner Control</div>
+    </div>
+
+    <div class="question-layout">
+      <div class="card question-card">
+        <div class="eyebrow">Question</div>
+        <h1>Air Conditioner Control System Using Logic Gates</h1>
+        <p class="lead">
+          A classroom uses a simple logic circuit to control an Air Conditioner using three digital inputs.
+        </p>
+
+        <div class="inputs-grid">
+          <div class="input-chip"><b>Manual Switch (M)</b><span>0 = OFF • 1 = ON</span></div>
+          <div class="input-chip"><b>Automatic Mode (A)</b><span>0 = OFF • 1 = ON</span></div>
+          <div class="input-chip"><b>Temperature (T)</b><span>0 = Cool • 1 = Hot</span></div>
+        </div>
+
+        <ul class="rules">
+          <li><span class="num">1</span><span>The Air Conditioner turns <b>ON</b> when the <b>Manual Switch (M) = 1</b>.</span></li>
+          <li><span class="num">2</span><span>It also turns <b>ON</b> when <b>Automatic Mode (A) = 1</b> <b>AND</b> the room is hot, <b>T = 1</b>.</span></li>
+        </ul>
+
+        <div class="tasks">
+          <strong>Tasks</strong>
+          <div><b>(a)</b> Construct the truth table for the system.</div>
+          <div><b>(b)</b> Draw the logic gate circuit for the system.</div>
+        </div>
+      </div>
+
+      <div class="card visual-card">
+        <div class="ac-wrap">
+          <svg class="ac-svg" viewBox="0 0 680 430" aria-label="Air conditioner illustration">
+            <defs>
+              <linearGradient id="acBody" x1="0" x2="1">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="70%" stop-color="#eef8ff"/>
+                <stop offset="100%" stop-color="#dff7ff"/>
+              </linearGradient>
+              <linearGradient id="panelGlow" x1="0" x2="1">
+                <stop offset="0%" stop-color="#2f80ed"/>
+                <stop offset="100%" stop-color="#39c6e8"/>
+              </linearGradient>
+            </defs>
+            <ellipse cx="340" cy="350" rx="230" ry="32" fill="#dfeef7" opacity=".65"/>
+            <rect x="70" y="70" width="540" height="220" rx="42" fill="url(#acBody)" stroke="#cfe0ea" stroke-width="5"/>
+            <rect x="105" y="105" width="470" height="46" rx="16" fill="url(#panelGlow)" opacity=".10"/>
+            <rect x="105" y="105" width="470" height="46" rx="16" fill="#f4f9fc" opacity=".82"/>
+            <rect x="460" y="115" width="84" height="24" rx="8" fill="#183b54"/>
+            <text x="502" y="133" font-size="16" text-anchor="middle" fill="#8df3ff" font-family="monospace" font-weight="700">23°C</text>
+            <circle cx="145" cy="128" r="7" fill="#20b26b"/>
+            <path d="M115 185 H565" stroke="#b9cedb" stroke-width="5" stroke-linecap="round"/>
+            <path d="M145 214 H535" stroke="#d6e5ed" stroke-width="9" stroke-linecap="round"/>
+            <g stroke="#a8c3d2" stroke-width="4">
+              <path d="M165 214 v40"/><path d="M210 214 v40"/><path d="M255 214 v40"/><path d="M300 214 v40"/>
+              <path d="M345 214 v40"/><path d="M390 214 v40"/><path d="M435 214 v40"/><path d="M480 214 v40"/>
+            </g>
+            <g class="air-wave" fill="none" stroke="url(#panelGlow)" stroke-width="8" stroke-linecap="round">
+              <path d="M220 320 q50 30 100 0"/>
+              <path d="M290 342 q50 30 100 0"/>
+              <path d="M360 320 q50 30 100 0"/>
+            </g>
+          </svg>
+        </div>
+        <div style="position:relative;z-index:2;margin-top:4px;font-size:13px;font-weight:800;color:#45647a;
+                background:#f7fbfe;padding:8px 14px;border-radius:10px;
+                border:1px solid #d7e5ee;">Air Conditioner Unit</div>
+        <div class="mini-formula">Output: C</div>
+      </div>
+    </div>
+
+    <button class="primary question-next" onclick="goToAnswers()">View Answers →</button>
+  </section>
+
+  <!-- PAGE 2: ANSWERS -->
+  <section class="page" id="answerPage">
+    <div class="answer-shell">
+      <div class="answer-head">
+        <div class="head-left">
+          <button class="ghost back-btn" onclick="goToQuestion()" title="Back">←</button>
+          <div class="answer-title">
+            <h2>Answer Walkthrough</h2>
+            <p>Build the truth table and the circuit one step at a time.</p>
+          </div>
+        </div>
+        <div class="tabs">
+          <button class="tab active" data-panel="tablePanel" onclick="switchTab(this)">Truth Table</button>
+          <button class="tab" data-panel="circuitPanel" onclick="switchTab(this)">Logic Circuit</button>
+        </div>
+      </div>
+
+      <div class="card answer-card">
+
+        <!-- TRUTH TABLE -->
+        <div class="panel active" id="tablePanel">
+          <div class="lesson-left">
+            <div class="step-label" id="tableStepLabel">Step 1 of 8</div>
+            <div class="step-title">Build the truth table</div>
+            <div class="step-text" id="tableStepText">
+              Start with M=0, A=0 and T=0. Neither condition for turning the AC on is true.
+            </div>
+            <div class="logic-note" id="tableLogicNote">C = 0</div>
+
+            <div class="progress" id="tableProgress"></div>
+
+            <div class="controls">
+              <button class="primary" id="nextRowBtn" onclick="nextTableRow()">Next Row →</button>
+              <button class="secondary" onclick="showAllRows()">Show All</button>
+              <button class="ghost" onclick="resetTable()">Reset</button>
+              <button class="primary" id="goCircuitBtn" onclick="goToCircuit()" style="margin-left:auto;background:linear-gradient(135deg,#16875b,#20a870);">
+                Next: Logic Circuit →
+              </button>
+            </div>
+          </div>
+
+          <div class="lesson-right">
+            <div class="truth-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Manual<br>M</th>
+                    <th>Auto<br>A</th>
+                    <th>Temp<br>T</th>
+                    <th>AC Output<br>C</th>
+                  </tr>
+                </thead>
+                <tbody id="truthBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- CIRCUIT -->
+        <div class="panel" id="circuitPanel">
+          <div class="lesson-left">
+            <div class="step-label" id="circuitStepLabel">Step 1 of 4</div>
+            <div class="step-title" id="circuitStepTitle">Place the inputs</div>
+            <div class="step-text" id="circuitStepText">
+              We have three inputs: Manual Switch M, Automatic Mode A, and Temperature T.
+            </div>
+
+            <div class="toggle-board">
+              <div class="toggle-title">Try the circuit after it is built</div>
+              <div class="toggles">
+                <button class="toggle" id="toggleM" onclick="toggleInput('M')">M = <span>0</span><small>Manual</small></button>
+                <button class="toggle" id="toggleA" onclick="toggleInput('A')">A = <span>0</span><small>Automatic</small></button>
+                <button class="toggle" id="toggleT" onclick="toggleInput('T')">T = <span>0</span><small>Temperature</small></button>
+              </div>
+              <div class="ac-status" id="acStatus">AC Output C = 0 • OFF</div>
+            </div>
+
+            <div class="progress" id="circuitProgress"></div>
+
+            <div class="controls">
+              <button class="primary" id="nextCircuitBtn" onclick="nextCircuitStep()">Next Step →</button>
+              <button class="secondary" onclick="showFullCircuit()">Show Complete</button>
+              <button class="ghost" onclick="resetCircuit()">Reset</button>
+            </div>
+          </div>
+
+          <div class="circuit-canvas">
+            <svg class="circuit-svg" viewBox="0 0 840 500" aria-label="Logic gate circuit">
+              <!-- Stage 1: Inputs -->
+              <g class="stage show" id="stage1">
+                <text x="70" y="120" class="input-label">A</text>
+                <text x="70" y="230" class="input-label">T</text>
+                <text x="70" y="365" class="input-label">M</text>
+
+                <circle cx="105" cy="114" r="9" class="node" id="nodeA"/>
+                <circle cx="105" cy="224" r="9" class="node" id="nodeT"/>
+                <circle cx="105" cy="359" r="9" class="node" id="nodeM"/>
+
+                <text x="113" y="94" class="bit-label" id="bitA">0</text>
+                <text x="113" y="204" class="bit-label" id="bitT">0</text>
+                <text x="113" y="339" class="bit-label" id="bitM">0</text>
+              </g>
+
+              <!-- Stage 2: AND gate -->
+              <g class="stage" id="stage2">
+                <path id="wireA" class="wire" d="M114 114 H245"/>
+                <path id="wireT" class="wire" d="M114 224 H245"/>
+                <path class="gate-shape" d="M245 78 H330 A92 92 0 0 1 330 260 H245 Z"/>
+                <text x="318" y="169" class="gate-label">AND</text>
+                <path id="wireAT" class="wire" d="M422 169 H520"/>
+                <text x="446" y="150" class="bit-label">A · T</text>
+              </g>
+
+              <!-- Stage 3: OR gate + manual -->
+              <g class="stage" id="stage3">
+                <path id="wireAT2" class="wire" d="M520 169 C565 169 565 210 600 210"/>
+                <path id="wireM" class="wire" d="M114 359 H500 C560 359 560 290 600 290"/>
+                <path class="gate-shape" d="M600 165 Q675 180 730 250 Q675 320 600 335 Q635 250 600 165 Z"/>
+                <path d="M600 165 Q650 250 600 335" fill="none" stroke="#294a62" stroke-width="4"/>
+                <text x="664" y="250" class="gate-label">OR</text>
+              </g>
+
+              <!-- Stage 4: Output -->
+              <g class="stage" id="stage4">
+                <path id="wireC" class="wire" d="M730 250 H780"/>
+                <circle cx="790" cy="250" r="9" class="node" id="nodeC"/>
+                <text x="752" y="228" class="output-label">C</text>
+
+                <g class="ac-mini" id="miniAc" transform="translate(652 350)">
+                  <rect class="ac-body" x="0" y="0" width="150" height="72" rx="16" fill="#fff" stroke="#294a62" stroke-width="3"/>
+                  <rect x="18" y="17" width="114" height="9" rx="4" fill="#dce9f0"/>
+                  <rect x="24" y="40" width="102" height="6" rx="3" fill="#c8dae4"/>
+                  <circle class="ac-light" cx="119" cy="13" r="5" fill="#aabcc8"/>
+                  <path class="air-stream" d="M38 83 q18 14 36 0 M76 91 q18 14 36 0" fill="none" stroke="#39c6e8" stroke-width="5" stroke-linecap="round"/>
+                </g>
+              </g>
+
+              <text x="420" y="465" text-anchor="middle" font-size="22" font-weight="900" fill="#2f80ed">
+                C = M + (A · T)
+              </text>
+            </svg>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+  const rows = [
+    {m:0,a:0,t:0,c:0, text:"M=0, A=0, T=0. Manual is OFF and automatic condition is false.", note:"C = 0"},
+    {m:0,a:0,t:1,c:0, text:"The room is hot, but Automatic Mode is OFF. The AC stays OFF.", note:"A · T = 0 · 1 = 0  →  C = 0"},
+    {m:0,a:1,t:0,c:0, text:"Automatic Mode is ON, but the room is cool. The AC stays OFF.", note:"A · T = 1 · 0 = 0  →  C = 0"},
+    {m:0,a:1,t:1,c:1, text:"Automatic Mode is ON AND the room is hot. The AC turns ON.", note:"A · T = 1 · 1 = 1  →  C = 1"},
+    {m:1,a:0,t:0,c:1, text:"Manual Switch is ON. Manual control alone is enough to turn the AC ON.", note:"M = 1  →  C = 1"},
+    {m:1,a:0,t:1,c:1, text:"Manual Switch is ON, so the AC is ON even though Automatic Mode is OFF.", note:"M = 1  →  C = 1"},
+    {m:1,a:1,t:0,c:1, text:"Manual Switch is ON. The room temperature does not stop manual control.", note:"M = 1  →  C = 1"},
+    {m:1,a:1,t:1,c:1, text:"Both manual and automatic conditions can turn the AC ON.", note:"M = 1 OR (A · T = 1)  →  C = 1"}
+  ];
+
+  let tableIndex = 0;
+  let circuitStep = 1;
+  let inputs = {M:0,A:0,T:0};
+
+  function initTable(){
+    const body = document.getElementById("truthBody");
+    body.innerHTML = rows.map((r,i)=>`
+      <tr id="row${i}">
+        <td class="${r.m ? 'bit1':''}">${r.m}</td>
+        <td class="${r.a ? 'bit1':''}">${r.a}</td>
+        <td class="${r.t ? 'bit1':''}">${r.t}</td>
+        <td class="${r.c ? 'output1':''}">${r.c}</td>
+      </tr>`).join("");
+    const p = document.getElementById("tableProgress");
+    p.innerHTML = rows.map((_,i)=>`<span id="tp${i}"></span>`).join("");
+    updateTable();
+  }
+
+  function updateTable(){
+    rows.forEach((_,i)=>{
+      const row = document.getElementById("row"+i);
+      row.classList.toggle("visible", i <= tableIndex);
+      row.classList.toggle("current", i === tableIndex);
+      document.getElementById("tp"+i).classList.toggle("done", i <= tableIndex);
+    });
+    document.getElementById("tableStepLabel").textContent = `Step ${tableIndex+1} of 8`;
+    document.getElementById("tableStepText").textContent = rows[tableIndex].text;
+    document.getElementById("tableLogicNote").textContent = rows[tableIndex].note;
+    document.getElementById("nextRowBtn").textContent = tableIndex === 7 ? "Completed ✓" : "Next Row →";
+  }
+
+  function nextTableRow(){
+    if(tableIndex < 7){tableIndex++; updateTable();}
+  }
+  function showAllRows(){tableIndex=7;updateTable();}
+  function resetTable(){tableIndex=0;updateTable();}
+
+  function initCircuitProgress(){
+    document.getElementById("circuitProgress").innerHTML =
+      [1,2,3,4].map(i=>`<span id="cp${i}"></span>`).join("");
+    updateCircuitStep();
+  }
+
+  const circuitCopy = {
+    1:["Place the inputs","We have three inputs: Manual Switch M, Automatic Mode A, and Temperature T."],
+    2:["Build the automatic condition","Connect A and T to an AND gate. This produces 1 only when Automatic Mode is ON and the room is hot."],
+    3:["Add manual control","Connect the AND output and Manual Switch M to an OR gate. Either path can turn the AC on."],
+    4:["Connect the AC output","The OR gate output is C. The final circuit represents C = M + (A · T)."]
+  };
+
+  function updateCircuitStep(){
+    [1,2,3,4].forEach(i=>{
+      document.getElementById("stage"+i).classList.toggle("show", i <= circuitStep);
+      document.getElementById("cp"+i).classList.toggle("done", i <= circuitStep);
+    });
+    document.getElementById("circuitStepLabel").textContent = `Step ${circuitStep} of 4`;
+    document.getElementById("circuitStepTitle").textContent = circuitCopy[circuitStep][0];
+    document.getElementById("circuitStepText").textContent = circuitCopy[circuitStep][1];
+    document.getElementById("nextCircuitBtn").textContent = circuitStep===4 ? "Completed ✓" : "Next Step →";
+    updateSignal();
+  }
+
+  function nextCircuitStep(){if(circuitStep<4){circuitStep++;updateCircuitStep();}}
+  function showFullCircuit(){circuitStep=4;updateCircuitStep();}
+  function resetCircuit(){circuitStep=1;inputs={M:0,A:0,T:0};updateToggles();updateCircuitStep();}
+
+  function toggleInput(k){
+    inputs[k] = inputs[k] ? 0 : 1;
+    updateToggles();
+    updateSignal();
+  }
+
+  function updateToggles(){
+    ["M","A","T"].forEach(k=>{
+      const b=document.getElementById("toggle"+k);
+      b.classList.toggle("on", inputs[k]===1);
+      b.querySelector("span").textContent=inputs[k];
+      const bit=document.getElementById("bit"+k);
+      if(bit) bit.textContent=inputs[k];
+      const node=document.getElementById("node"+k);
+      if(node) node.classList.toggle("live", inputs[k]===1);
+    });
+  }
+
+  function live(id,on){
+    const el=document.getElementById(id);
+    if(el) el.classList.toggle("live", !!on);
+  }
+
+  function updateSignal(){
+    const andOut = inputs.A && inputs.T;
+    const c = inputs.M || andOut;
+
+    live("wireA", inputs.A && circuitStep>=2);
+    live("wireT", inputs.T && circuitStep>=2);
+    live("wireAT", andOut && circuitStep>=2);
+    live("wireAT2", andOut && circuitStep>=3);
+    live("wireM", inputs.M && circuitStep>=3);
+    live("wireC", c && circuitStep>=4);
+
+    const nodeC=document.getElementById("nodeC");
+    if(nodeC) nodeC.classList.toggle("live", !!(c && circuitStep>=4));
+
+    const miniAc=document.getElementById("miniAc");
+    miniAc.classList.toggle("on", !!(c && circuitStep>=4));
+
+    const status=document.getElementById("acStatus");
+    status.textContent = `AC Output C = ${c?1:0} • ${c ? "ON" : "OFF"}`;
+    status.classList.toggle("on", !!c);
+  }
+
+  function switchTab(btn){
+    document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    document.querySelectorAll(".panel").forEach(p=>p.classList.remove("active"));
+    document.getElementById(btn.dataset.panel).classList.add("active");
+  }
+
+  function goToCircuit(){
+    const circuitTab = document.querySelector('.tab[data-panel="circuitPanel"]');
+    if(circuitTab) switchTab(circuitTab);
+  }
+
+  function goToAnswers(){
+    document.getElementById("questionPage").classList.remove("active");
+    document.getElementById("answerPage").classList.add("active");
+  }
+  function goToQuestion(){
+    document.getElementById("answerPage").classList.remove("active");
+    document.getElementById("questionPage").classList.add("active");
+  }
+
+  initTable();
+  initCircuitProgress();
+  updateToggles();
+  updateSignal();
+</script>
+</body>
+</html>
