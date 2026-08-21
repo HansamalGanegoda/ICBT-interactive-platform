@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Microsoft 365 Playground — End User Applications, Session 1</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style>
+  :root{
+    --accent:#28b369;
+    --accent-dark:#185f39;
+    --ink:#182a20;
+    --muted:#5c6b76;
+    --bg:#ffffff;
+    --card:#ffffff;
+    --border:#e2e6ea;
+    --border-soft:#f0f2f5;
+    --app-color:#28b369;
+    --app-dark:#185f39;
+    --app-soft:#e7f4ee;
+  }
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; margin:0; padding:0; overflow:hidden; background:var(--bg); font-family:"Segoe UI",Inter,Arial,sans-serif; color:var(--ink); }
+  body{ display:flex; flex-direction:column; }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    flex:0 0 auto; display:flex; align-items:center; justify-content:space-between;
+    padding:12px 28px; background:#ffffff; border-bottom:1px solid var(--border);
+  }
+  .topbar-brand{ display:flex; align-items:center; gap:16px; }
+  .topbar-brand img{ height:34px; width:auto; object-fit:contain; }
+  .topbar-title{ font-size:1.02em; }
+  .topbar-title b{ display:block; font-size:1.1em; color:var(--accent-dark); }
+  .topbar-title span{ display:block; font-size:.7em; color:var(--muted); margin-top:1px; }
+  .topbar-kicker{
+    font-size:.66em; font-weight:800; letter-spacing:1px; text-transform:uppercase;
+    background:var(--border-soft); color:var(--accent-dark); padding:6px 13px; border-radius:20px;
+  }
+
+  /* ---------- Hero ---------- */
+  .hero{ flex:0 0 auto; padding:12px 28px 2px; max-width:1280px; margin:0 auto; width:100%; }
+  .hero h1{ margin:0 0 4px; font-size:1.35em; color:var(--accent-dark); letter-spacing:-.4px; }
+  .hero p{ margin:0; color:var(--muted); max-width:760px; line-height:1.4; font-size:.82em; }
+
+  /* ---------- Layout ---------- */
+  .layout{
+    flex:1 1 auto; min-height:0; display:grid; grid-template-columns:230px 1fr; gap:18px;
+    max-width:1280px; width:100%; margin:0 auto; padding:12px 28px; overflow:hidden;
+  }
+
+  /* ---------- App sidebar ---------- */
+  .app-list{ display:flex; flex-direction:column; gap:7px; overflow-y:auto; min-height:0; padding-right:2px; }
+  .app-item{
+    display:flex; align-items:center; gap:11px; padding:9px 12px; border-radius:10px;
+    background:var(--card); border:1px solid var(--border); border-left:4px solid var(--border);
+    cursor:pointer; transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease, background .15s ease;
+  }
+  .app-item:hover{ transform:translateX(3px); box-shadow:0 6px 14px rgba(15,23,32,.09); }
+  .app-item.active{ box-shadow:0 6px 14px rgba(15,23,32,.12); }
+  .app-item img{ width:24px; height:24px; object-fit:contain; flex:0 0 24px; }
+  .app-item b{ font-size:.83em; }
+  .app-item small{ display:block; font-size:.62em; color:var(--muted); }
+
+  /* ---------- Main panel ---------- */
+  .panel{
+    display:flex; flex-direction:column; min-height:0; background:var(--card); border:1px solid var(--border);
+    border-radius:14px; padding:18px 24px; box-shadow:0 10px 30px rgba(15,23,32,.06);
+  }
+  .panel-head{ flex:0 0 auto; display:flex; align-items:center; gap:14px; padding-bottom:12px; border-bottom:1px solid var(--border-soft); margin-bottom:14px; }
+  .panel-head img{ width:42px; height:42px; object-fit:contain; }
+  .panel-head h2{ margin:0 0 2px; font-size:1.22em; color:var(--app-dark); }
+  .panel-head p{ margin:0; color:var(--muted); font-size:.8em; max-width:640px; }
+
+  .feature-row{ flex:0 0 auto; display:grid; grid-template-columns:repeat(4,1fr); gap:9px; margin-bottom:14px; }
+  .feature-chip{
+    background:var(--app-soft); border:1px solid var(--border); border-left:3px solid var(--app-color);
+    border-radius:8px; padding:9px 11px; font-size:.72em; line-height:1.35;
+  }
+  .feature-chip b{ display:block; color:var(--app-dark); font-size:1em; margin-bottom:1px; }
+
+  .demo-label{
+    flex:0 0 auto; display:inline-flex; align-items:center; gap:6px; font-size:.66em; font-weight:800;
+    letter-spacing:1px; text-transform:uppercase; color:var(--app-dark); margin-bottom:8px;
+  }
+  .demo-label::before{ content:"▶"; font-size:.8em; color:var(--app-color); }
+  .demo-box{ flex:1 1 auto; min-height:0; overflow:auto; border:1px dashed var(--border); border-radius:12px; padding:16px; background:#fafbfc; }
+
+  /* ---------- Shared small UI ---------- */
+  .btn{
+    border:1px solid var(--border); background:#fff; color:var(--ink);
+    padding:7px 13px; border-radius:8px; font-size:.8em; cursor:pointer; font-weight:600;
+  }
+  .btn:hover{ border-color:var(--app-color); color:var(--app-dark); }
+  .btn.primary{ background:var(--app-color); border-color:var(--app-color); color:#fff; }
+  .btn.primary:hover{ background:var(--app-dark); border-color:var(--app-dark); color:#fff; }
+  .btn.icon{ font-size:.95em; padding:6px 10px; }
+  input[type=text], input[type=email], textarea, select{
+    border:1px solid var(--border); border-radius:8px; padding:8px 10px; font:inherit; font-size:.85em; color:var(--ink);
+  }
+  input:focus, textarea:focus, select:focus{ outline:2px solid var(--app-color); outline-offset:1px; }
+
+  /* ================= WORD ================= */
+  .word-toolbar{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
+  .word-toolbar button{ min-width:34px; }
+  .word-page{
+    background:#fff; border:1px solid var(--border); border-radius:8px; min-height:160px;
+    padding:20px 24px; font-size:.92em; line-height:1.55; box-shadow:0 2px 10px rgba(0,0,0,.05);
+  }
+  .word-page:focus{ outline:none; border-color:var(--app-color); }
+  .word-status{ margin-top:8px; font-size:.72em; color:var(--muted); }
+
+  /* ================= EXCEL ================= */
+  .excel-hint{ font-size:.74em; color:var(--muted); margin-bottom:10px; }
+  .excel-hint code{ background:var(--app-soft); padding:2px 6px; border-radius:4px; }
+  table.excel-grid{ border-collapse:collapse; width:100%; }
+  table.excel-grid th{ background:var(--app-soft); color:var(--app-dark); font-size:.72em; padding:6px; border:1px solid var(--border); }
+  table.excel-grid td{ border:1px solid var(--border); padding:0; }
+  table.excel-grid td input{
+    width:100%; border:none; border-radius:0; padding:6px 8px; font-size:.78em; text-align:left;
+  }
+  table.excel-grid td input:focus{ outline:2px solid var(--app-color); outline-offset:-2px; }
+  table.excel-grid th.rowhead{ width:34px; }
+
+  /* ================= POWERPOINT ================= */
+  .ppt-controls{ display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+  .ppt-counter{ font-size:.78em; color:var(--muted); }
+  .ppt-stage{
+    width:100%; max-width:600px; aspect-ratio:16/9; margin:0 auto 14px; border-radius:10px;
+    background:var(--app-soft); border:1px solid var(--app-color);
+    display:flex; flex-direction:column; justify-content:center; padding:22px 30px; box-shadow:0 8px 22px rgba(0,0,0,.06);
+  }
+  .ppt-stage [contenteditable]{ outline:none; }
+  .ppt-title{ font-size:1.3em; font-weight:800; color:var(--app-dark); margin-bottom:8px; }
+  .ppt-body{ font-size:.85em; color:var(--muted); line-height:1.45; }
+  .ppt-thumbs{ display:flex; gap:8px; flex-wrap:wrap; }
+  .ppt-thumb{
+    width:60px; height:34px; border-radius:6px; border:2px solid var(--border); background:var(--app-soft);
+    font-size:.6em; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--app-dark); font-weight:700;
+  }
+  .ppt-thumb.active{ border-color:var(--app-color); }
+
+  /* ================= OUTLOOK ================= */
+  .outlook-layout{ display:grid; grid-template-columns:220px 1fr; gap:14px; min-height:0; }
+  .outlook-tabs{ display:flex; gap:6px; margin-bottom:10px; }
+  .outlook-tabs button.active{ background:var(--app-color); color:#fff; border-color:var(--app-color); }
+  .mail-list{ display:flex; flex-direction:column; gap:6px; max-height:280px; overflow:auto; }
+  .mail-item{ border:1px solid var(--border); border-radius:8px; padding:9px 11px; cursor:pointer; font-size:.76em; }
+  .mail-item:hover{ border-color:var(--app-color); }
+  .mail-item.active{ background:var(--app-soft); border-color:var(--app-color); }
+  .mail-item b{ display:block; font-size:1.02em; }
+  .mail-item span{ display:block; color:var(--muted); margin-top:2px; }
+  .mail-item time{ float:right; color:var(--muted); font-size:.9em; }
+  .reading-pane{ border:1px solid var(--border); border-radius:10px; padding:16px; font-size:.85em; }
+  .reading-pane h3{ margin:0 0 4px; color:var(--app-dark); }
+  .reading-pane .meta{ color:var(--muted); font-size:.78em; margin-bottom:12px; }
+  .compose-form{ display:flex; flex-direction:column; gap:8px; }
+  .compose-form input, .compose-form textarea{ width:100%; }
+  .compose-form textarea{ min-height:90px; resize:vertical; }
+  .toast{
+    display:none; margin-top:10px; background:#eefcf5; border:1px solid var(--accent); color:var(--accent-dark);
+    padding:8px 12px; border-radius:8px; font-size:.78em; font-weight:700;
+  }
+
+  /* ================= ACCESS ================= */
+  .access-note{ font-size:.74em; color:var(--muted); margin-bottom:12px; }
+  .access-form{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  .access-form input{ flex:1; min-width:130px; }
+  table.access-table{ border-collapse:collapse; width:100%; font-size:.8em; }
+  table.access-table th{ background:var(--app-soft); color:var(--app-dark); text-align:left; padding:8px 10px; border:1px solid var(--border); }
+  table.access-table td{ padding:8px 10px; border:1px solid var(--border); }
+  table.access-table td.del{ text-align:center; width:36px; }
+  .field-tag{ font-size:.62em; color:var(--muted); }
+
+  /* ================= TEAMS ================= */
+  .chat-window{ border:1px solid var(--border); border-radius:10px; padding:14px; height:220px; overflow:auto; margin-bottom:10px; background:#fafbfc; }
+  .bubble{ max-width:70%; padding:9px 13px; border-radius:14px; margin:6px 0; font-size:.82em; line-height:1.4; }
+  .bubble.them{ background:#f1f1fb; border-bottom-left-radius:4px; }
+  .bubble.me{ background:var(--app-color); color:#fff; margin-left:auto; border-bottom-right-radius:4px; }
+  .bubble .who{ display:block; font-size:.68em; opacity:.75; margin-bottom:2px; }
+  .chat-input-row{ display:flex; gap:8px; }
+  .chat-input-row input{ flex:1; }
+
+  /* ================= ONENOTE ================= */
+  .onenote-layout{ display:grid; grid-template-columns:160px 1fr; gap:14px; min-height:0; }
+  .page-list{ display:flex; flex-direction:column; gap:6px; }
+  .page-item{ border:1px solid var(--border); border-radius:8px; padding:8px 10px; font-size:.78em; cursor:pointer; }
+  .page-item.active{ background:var(--app-soft); border-color:var(--app-color); }
+  .note-area{ border:1px solid var(--border); border-radius:10px; padding:16px; min-height:180px; font-size:.86em; line-height:1.5; }
+  .note-area:focus{ outline:none; border-color:var(--app-color); }
+
+  /* ================= ONEDRIVE ================= */
+  .drive-toolbar{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .storage-bar{ height:8px; background:var(--app-soft); border-radius:6px; overflow:hidden; width:200px; }
+  .storage-bar div{ height:100%; background:var(--app-color); }
+  .drive-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:12px; }
+  .drive-tile{
+    display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px; border-radius:10px;
+    border:1px solid var(--border); cursor:pointer; font-size:.68em; text-align:center; background:#fff;
+  }
+  .drive-tile:hover{ border-color:var(--app-color); }
+  .drive-tile .emoji{ font-size:1.8em; }
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(20,24,28,.45); display:none; align-items:center; justify-content:center; z-index:50;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal-box{ background:#fff; border-radius:14px; padding:24px 26px; max-width:420px; width:90%; box-shadow:0 20px 50px rgba(0,0,0,.25); }
+  .modal-box h3{ margin-top:0; color:var(--app-dark); }
+  .modal-box .btn{ margin-top:14px; }
+
+  footer.page-footer{ flex:0 0 auto; text-align:center; padding:8px; color:var(--muted); font-size:.68em; }
+
+  @media (max-width:900px){
+    html,body{ overflow:auto; height:auto; }
+    .layout{ grid-template-columns:1fr; overflow:visible; }
+    .app-list{ flex-direction:row; flex-wrap:wrap; overflow:visible; }
+    .feature-row{ grid-template-columns:1fr 1fr; }
+    .outlook-layout, .onenote-layout{ grid-template-columns:1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-brand">
+    <img alt="ICBT Campus" src="icbt.png"/>
+    <img alt="OTHM Qualifications" src="othm.png"/>
+    <div class="topbar-title">
+      <b>Microsoft 365 Playground</b>
+      <span>End User Applications · Session 1 · Interactive Practice</span>
+    </div>
+  </div>
+  <div class="topbar-kicker">Hands-on Demo</div>
+</div>
+
+<div class="hero">
+  <h1>Try the Basics of Every Microsoft 365 App</h1>
+  <p>Pick an app on the left, read its core functionality, then use the live mini demo to actually click, type, and interact — just like the real thing.</p>
+</div>
+
+<div class="layout">
+  <div class="app-list" id="appList"></div>
+  <div class="panel" id="panel"></div>
+</div>
+
+<footer class="page-footer">International Diploma in Information and Communication Technology · End User Applications · Session 1 Playground</footer>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <h3 id="modalTitle">Notice</h3>
+    <p id="modalBody"></p>
+    <button class="btn primary" onclick="closeModal()">Close</button>
+  </div>
+</div>
+
+<script>
+/* ---------------------------------------------------------
+   App registry — real Microsoft 365 app icons + metadata
+---------------------------------------------------------- */
+const APPS = [
+  {
+    id:'word', name:'Word', tag:'Document editor',
+    icon:'https://commons.wikimedia.org/wiki/Special:FilePath/Microsoft_Office_Word_(2025–present).svg',
+    color:'#2b579a', dark:'#1b3f73', soft:'#eaf1fb',
+    desc:'Create and format letters, reports, and assignments.',
+    features:[
+      ['Format text','Bold, italic, underline, fonts, colors'],
+      ['Styles','Headings & consistent structure'],
+      ['Insert objects','Pictures, tables, shapes'],
+      ['Save & share','Local file or OneDrive AutoSave']
+    ],
+    render: renderWord
+  },
+  {
+    id:'excel', name:'Excel', tag:'Spreadsheets',
+    icon:'https://commons.wikimedia.org/wiki/Special:FilePath/Microsoft_Office_Excel_(2025–present).svg',
+    color:'#217346', dark:'#185c37', soft:'#e9f7ee',
+    desc:'Organise numbers and data, then calculate with formulas.',
+    features:[
+      ['Cells & grid','Rows, columns, and cell references'],
+      ['Formulas','=SUM(), basic math on cells'],
+      ['Sort your data','Find patterns quickly'],
+      ['Charts','Turn numbers into visuals']
+    ],
+    render: renderExcel
+  },
+  {
+    id:'ppt', name:'PowerPoint', tag:'Presentations',
+    icon:'https://commons.wikimedia.org/wiki/Special:FilePath/Microsoft_Office_PowerPoint_(2025–present).svg',
+    color:'#c43e1c', dark:'#8f2c12', soft:'#fdece5',
+    desc:'Build slide decks to present ideas visually.',
+    features:[
+      ['Slides','One idea per slide, in order'],
+      ['Edit in place','Click any title or body text'],
+      ['Add / remove','Grow the deck as you go'],
+      ['Slide sorter','Thumbnails for quick navigation']
+    ],
+    render: renderPpt
+  },
+  {
+    id:'outlook', name:'Outlook', tag:'Email & calendar',
+    icon:'https://commons.wikimedia.org/wiki/Special:FilePath/Microsoft_Outlook_Icon_(2025–present).svg',
+    color:'#0078d4', dark:'#005a9e', soft:'#e8f4fd',
+    desc:'Send, receive, and organise email messages.',
+    features:[
+      ['Inbox','Read incoming messages'],
+      ['Compose','Write and send new mail'],
+      ['Folders','Inbox vs Sent, keep mail organised'],
+      ['Reading pane','Preview a message at a glance']
+    ],
+    render: renderOutlook
+  },
+  {
+    id:'access', name:'Access', tag:'Database',
+    icon:'https://commons.wikimedia.org/wiki/Special:FilePath/Microsoft_Office_Access_(2025-present).svg',
+    color:'#a4373a', dark:'#7c2a2c', soft:'#fbeceb',
+    desc:'Store structured data in tables of records and fields.',
+    features:[
+      ['Tables','Rows = records, columns = fields'],
+      ['Add records','Insert new structured data'],
+      ['Delete records','Remove rows you no longer need'],
+      ['Data types','Text, numbers, dates per field']
+    ],
+    render: renderAccess
+  },
+  {
+    id:'teams', name:'Teams', tag:'Chat & meetings',
+    icon:'https://commons.wikimedia.org/wiki/Special:FilePath/Microsoft_Office_Teams_(2018–present).svg',
+    color:'#6264a7', dark:'#464775', soft:'#eeeef9',
+    desc:'Chat, call, and collaborate with classmates or colleagues.',
+    features:[
+      ['Chat','Instant messages in channels'],
+      ['Meetings','Video calls & screen sharing'],
+      ['Channels','Organise conversations by topic'],
+      ['File sharing','Send documents in a chat']
+    ],
+    render: renderTeams
+  },
+  {
+    id:'onenote', name:'OneNote', tag:'Digital notebook',
+    icon:'https://commons.wikimedia.org/wiki/Special:FilePath/Microsoft_Office_OneNote_(2019–present).svg',
+    color:'#7719aa', dark:'#5c1385', soft:'#f5eafb',
+    desc:'Take free-form notes organised into pages and sections.',
+    features:[
+      ['Pages','One note topic per page'],
+      ['Free-form typing','Click anywhere and write'],
+      ['Multiple pages','Switch between notes instantly'],
+      ['Sync everywhere','Notes follow you across devices']
+    ],
+    render: renderOneNote
+  },
+  {
+    id:'onedrive', name:'OneDrive', tag:'Cloud storage',
+    icon:'https://commons.wikimedia.org/wiki/Special:FilePath/Microsoft_Office_OneDrive_(2019–present).svg',
+    color:'#0364b8', dark:'#024a8a', soft:'#e7f1fb',
+    desc:'Store files in the cloud and access them from any device.',
+    features:[
+      ['Folders & files','Organise your cloud storage'],
+      ['New folder','Create structure as you go'],
+      ['Open a file','Quick preview of file content'],
+      ['Storage usage','Track how much space is used']
+    ],
+    render: renderOneDrive
+  }
+];
+
+let activeApp = APPS[0].id;
+
+function buildSidebar(){
+  const list = document.getElementById('appList');
+  list.innerHTML = APPS.map(a => {
+    const isActive = a.id===activeApp;
+    const style = isActive
+      ? `border-left-color:${a.color}; border-color:${a.color}; background:${a.soft};`
+      : `border-left-color:${a.color};`;
+    return `
+    <div class="app-item ${isActive?'active':''}" data-id="${a.id}" style="${style}">
+      <img alt="${a.name}" src="${a.icon}"/>
+      <div><b style="color:${isActive?a.dark:'inherit'}">${a.name}</b><small>${a.tag}</small></div>
+    </div>
+  `;
+  }).join('');
+  list.querySelectorAll('.app-item').forEach(el=>{
+    el.addEventListener('click', ()=>{ activeApp = el.dataset.id; buildSidebar(); buildPanel(); });
+  });
+}
+
+function buildPanel(){
+  const app = APPS.find(a=>a.id===activeApp);
+  document.documentElement.style.setProperty('--app-color', app.color);
+  document.documentElement.style.setProperty('--app-dark', app.dark);
+  document.documentElement.style.setProperty('--app-soft', app.soft);
+  const panel = document.getElementById('panel');
+  panel.innerHTML = `
+    <div class="panel-head">
+      <img alt="${app.name}" src="${app.icon}"/>
+      <div><h2>${app.name}</h2><p>${app.desc}</p></div>
+    </div>
+    <div class="feature-row">
+      ${app.features.map(f=>`<div class="feature-chip"><b>${f[0]}</b>${f[1]}</div>`).join('')}
+    </div>
+    <div class="demo-label">Try it yourself</div>
+    <div class="demo-box" id="demoBox"></div>
+  `;
+  app.render(document.getElementById('demoBox'));
+}
+
+function showModal(title, body){
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').textContent = body;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('open'); }
+
+/* ---------------------------------------------------------
+   WORD demo — contentEditable page with a working toolbar
+---------------------------------------------------------- */
+function renderWord(box){
+  box.innerHTML = `
+    <div class="word-toolbar">
+      <button class="btn icon" data-cmd="bold"><b>B</b></button>
+      <button class="btn icon" data-cmd="italic"><i>I</i></button>
+      <button class="btn icon" data-cmd="underline" style="text-decoration:underline;">U</button>
+      <select class="btn icon" id="wordSize">
+        <option value="3">Normal</option>
+        <option value="5">Heading</option>
+        <option value="6">Large</option>
+      </select>
+      <input type="color" id="wordColor" value="#185f39" style="width:34px;height:32px;padding:2px;border-radius:8px;border:1px solid var(--border);cursor:pointer;"/>
+      <button class="btn icon" data-cmd="insertUnorderedList">• List</button>
+      <button class="btn icon" data-cmd="removeFormat">Clear</button>
+    </div>
+    <div class="word-page" id="wordPage" contenteditable="true">
+      <p>Type here to try Microsoft Word's basic formatting tools. Select some text, then click <b>Bold</b>, <i>Italic</i>, or change its size and color.</p>
+    </div>
+    <div class="word-status" id="wordStatus">0 words · 0 characters</div>
+  `;
+  const page = box.querySelector('#wordPage');
+  box.querySelectorAll('[data-cmd]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      page.focus();
+      document.execCommand(btn.dataset.cmd, false, null);
+    });
+  });
+  box.querySelector('#wordSize').addEventListener('change', e=>{
+    page.focus();
+    document.execCommand('fontSize', false, e.target.value);
+  });
+  box.querySelector('#wordColor').addEventListener('input', e=>{
+    page.focus();
+    document.execCommand('foreColor', false, e.target.value);
+  });
+  const status = box.querySelector('#wordStatus');
+  const updateStatus = ()=>{
+    const text = page.innerText.trim();
+    const words = text ? text.split(/\s+/).length : 0;
+    status.textContent = `${words} words · ${text.length} characters`;
+  };
+  page.addEventListener('input', updateStatus);
+  updateStatus();
+}
+
+/* ---------------------------------------------------------
+   EXCEL demo — mini grid with SUM()/arithmetic formulas
+---------------------------------------------------------- */
+function renderExcel(box){
+  const cols = ['A','B','C','D','E'];
+  const rows = 6;
+  const seed = { A1:'120', A2:'85', A3:'60', B1:'Qty', A4:'=SUM(A1:A3)' };
+
+  let head = '<tr><th class="rowhead"></th>' + cols.map(c=>`<th>${c}</th>`).join('') + '</tr>';
+  let body = '';
+  for(let r=1;r<=rows;r++){
+    body += `<tr><th class="rowhead">${r}</th>`;
+    cols.forEach(c=>{
+      const id = c+r;
+      body += `<td><input data-id="${id}" value="${seed[id]||''}"/></td>`;
+    });
+    body += '</tr>';
+  }
+  box.innerHTML = `
+    <div class="excel-hint">Try it: click a cell and type a number, or type <code>=SUM(A1:A3)</code> / <code>=A1+A2</code> and press Enter.</div>
+    <table class="excel-grid">${head}${body}</table>
+  `;
+
+  const cellValue = id => box.querySelector(`input[data-id="${id}"]`);
+
+  function rangeSum(range){
+    const [start, end] = range.split(':');
+    const col = start.replace(/[0-9]/g,'');
+    const r1 = parseInt(start.replace(/[A-Z]/g,''),10);
+    const r2 = parseInt(end.replace(/[A-Z]/g,''),10);
+    let sum = 0;
+    for(let r=r1;r<=r2;r++){
+      const cell = cellValue(col+r);
+      sum += cell ? (parseFloat(evaluateCell(col+r)) || 0) : 0;
+    }
+    return sum;
+  }
+
+  function evaluateCell(id){
+    const cell = cellValue(id);
+    if(!cell) return '';
+    const raw = cell.dataset.formula !== undefined ? cell.dataset.formula : cell.value;
+    if(typeof raw === 'string' && raw.startsWith('=')){
+      const expr = raw.slice(1).trim();
+      const sumMatch = expr.match(/^SUM\(([A-Z][0-9]+):([A-Z][0-9]+)\)$/i);
+      if(sumMatch) return rangeSum(`${sumMatch[1]}:${sumMatch[2]}`);
+      const arith = expr.replace(/[A-Z][0-9]+/gi, ref => {
+        const v = parseFloat(evaluateCell(ref.toUpperCase()));
+        return isNaN(v) ? 0 : v;
+      });
+      try { return Function(`"use strict";return (${arith})`)(); } catch(e){ return '#ERR'; }
+    }
+    return raw;
+  }
+
+  function refreshAll(){
+    box.querySelectorAll('input[data-id]').forEach(inp=>{
+      if(inp.dataset.formula === undefined && inp.value.startsWith('=')) inp.dataset.formula = inp.value;
+      if(inp !== document.activeElement){
+        const val = evaluateCell(inp.dataset.id);
+        inp.value = val;
+      }
+    });
+  }
+
+  box.querySelectorAll('input[data-id]').forEach(inp=>{
+    inp.addEventListener('focus', ()=>{
+      if(inp.dataset.formula !== undefined) inp.value = inp.dataset.formula;
+    });
+    inp.addEventListener('change', ()=>{
+      if(inp.value.startsWith('=')) inp.dataset.formula = inp.value;
+      else delete inp.dataset.formula;
+      refreshAll();
+    });
+  });
+  refreshAll();
+}
+
+/* ---------------------------------------------------------
+   POWERPOINT demo — editable slides + thumbnail navigation
+---------------------------------------------------------- */
+function renderPpt(box){
+  let slides = [
+    { title:'Welcome to the Playground', body:'Click this text to edit the title and body, just like a real slide.' },
+    { title:'Why Presentations Matter', body:'One idea per slide keeps your audience focused.' },
+    { title:'Add Your Own Slide', body:'Use the “+ Add Slide” button to grow this deck.' }
+  ];
+  let current = 0;
+
+  function paint(){
+    box.innerHTML = `
+      <div class="ppt-controls">
+        <button class="btn" id="pptPrev">◀ Prev</button>
+        <span class="ppt-counter">Slide ${current+1} / ${slides.length}</span>
+        <button class="btn" id="pptNext">Next ▶</button>
+        <button class="btn primary" id="pptAdd">+ Add Slide</button>
+        <button class="btn" id="pptDel">Delete Slide</button>
+      </div>
+      <div class="ppt-stage">
+        <div class="ppt-title" contenteditable="true" id="pptTitle">${slides[current].title}</div>
+        <div class="ppt-body" contenteditable="true" id="pptBody">${slides[current].body}</div>
+      </div>
+      <div class="ppt-thumbs" id="pptThumbs"></div>
+    `;
+    const thumbs = box.querySelector('#pptThumbs');
+    thumbs.innerHTML = slides.map((s,i)=>`<div class="ppt-thumb ${i===current?'active':''}" data-i="${i}">${i+1}</div>`).join('');
+    thumbs.querySelectorAll('.ppt-thumb').forEach(t=>{
+      t.addEventListener('click', ()=>{ commit(); current = parseInt(t.dataset.i,10); paint(); });
+    });
+    box.querySelector('#pptPrev').addEventListener('click', ()=>{ commit(); current = Math.max(0,current-1); paint(); });
+    box.querySelector('#pptNext').addEventListener('click', ()=>{ commit(); current = Math.min(slides.length-1,current+1); paint(); });
+    box.querySelector('#pptAdd').addEventListener('click', ()=>{
+      commit();
+      slides.splice(current+1,0,{ title:'New Slide', body:'Click to edit this body text.' });
+      current += 1; paint();
+    });
+    box.querySelector('#pptDel').addEventListener('click', ()=>{
+      if(slides.length<=1){ showModal('Cannot delete','A deck needs at least one slide.'); return; }
+      slides.splice(current,1);
+      current = Math.max(0, current-1); paint();
+    });
+  }
+  function commit(){
+    const t = box.querySelector('#pptTitle');
+    const b = box.querySelector('#pptBody');
+    if(t) slides[current].title = t.innerText;
+    if(b) slides[current].body = b.innerText;
+  }
+  paint();
+}
+
+/* ---------------------------------------------------------
+   OUTLOOK demo — inbox / sent + reading pane + compose
+---------------------------------------------------------- */
+function renderOutlook(box){
+  let folders = {
+    inbox: [
+      { from:'ICBT Campus', subject:'Welcome to End User Applications', body:'Hi! Welcome to Session 1. This week we cover Microsoft 365 basics.', time:'09:02' },
+      { from:'Classmate', subject:'Group assignment', body:'Can we meet after class to plan the group assignment?', time:'10:41' },
+      { from:'IT Helpdesk', subject:'Your OneDrive storage', body:'You are using 2.1 GB of your 5 GB free storage.', time:'11:15' }
+    ],
+    sent: []
+  };
+  let activeFolder = 'inbox';
+  let activeIndex = 0;
+
+  function paint(){
+    const list = folders[activeFolder];
+    box.innerHTML = `
+      <div class="outlook-tabs">
+        <button class="btn ${activeFolder==='inbox'?'active':''}" data-f="inbox">Inbox (${folders.inbox.length})</button>
+        <button class="btn ${activeFolder==='sent'?'active':''}" data-f="sent">Sent (${folders.sent.length})</button>
+        <button class="btn primary" id="composeBtn" style="margin-left:auto;">+ Compose</button>
+      </div>
+      <div class="outlook-layout">
+        <div class="mail-list" id="mailList">
+          ${list.length ? list.map((m,i)=>`
+            <div class="mail-item ${i===activeIndex?'active':''}" data-i="${i}">
+              <time>${m.time}</time><b>${m.from}</b>
+              ${m.subject}<span>${m.body.slice(0,34)}...</span>
+            </div>`).join('') : '<div class="mail-item">No messages yet.</div>'}
+        </div>
+        <div id="rightPane"></div>
+      </div>
+    `;
+    box.querySelectorAll('.outlook-tabs [data-f]').forEach(b=>{
+      b.addEventListener('click', ()=>{ activeFolder=b.dataset.f; activeIndex=0; paint(); });
+    });
+    box.querySelector('#composeBtn').addEventListener('click', paintCompose);
+    box.querySelectorAll('.mail-item[data-i]').forEach(el=>{
+      el.addEventListener('click', ()=>{ activeIndex=parseInt(el.dataset.i,10); paintReading(); });
+    });
+    if(list.length) paintReading(); else box.querySelector('#rightPane').innerHTML = '<div class="reading-pane">Nothing to show.</div>';
+  }
+  function paintReading(){
+    const m = folders[activeFolder][activeIndex];
+    box.querySelectorAll('.mail-item[data-i]').forEach(el=>el.classList.toggle('active', parseInt(el.dataset.i,10)===activeIndex));
+    box.querySelector('#rightPane').innerHTML = `
+      <div class="reading-pane">
+        <h3>${m.subject}</h3>
+        <div class="meta">From <b>${m.from}</b> · ${m.time}</div>
+        <p>${m.body}</p>
+      </div>
+    `;
+  }
+  function paintCompose(){
+    box.querySelector('#rightPane').innerHTML = `
+      <div class="reading-pane">
+        <h3>New Message</h3>
+        <div class="compose-form">
+          <input type="text" id="cTo" placeholder="To"/>
+          <input type="text" id="cSubject" placeholder="Subject"/>
+          <textarea id="cBody" placeholder="Write your message..."></textarea>
+          <button class="btn primary" id="cSend">Send</button>
+          <div class="toast" id="cToast">✔ Message sent!</div>
+        </div>
+      </div>
+    `;
+    box.querySelector('#cSend').addEventListener('click', ()=>{
+      const to = box.querySelector('#cTo').value || '(no recipient)';
+      const subject = box.querySelector('#cSubject').value || '(no subject)';
+      const body = box.querySelector('#cBody').value || '';
+      folders.sent.unshift({ from:`Me → ${to}`, subject, body, time:'now' });
+      box.querySelector('#cToast').style.display = 'block';
+      setTimeout(()=>{ activeFolder='sent'; activeIndex=0; paint(); }, 700);
+    });
+  }
+  paint();
+}
+
+/* ---------------------------------------------------------
+   ACCESS demo — a simple table of records with add/delete
+---------------------------------------------------------- */
+function renderAccess(box){
+  let nextId = 4;
+  let records = [
+    { id:1, name:'Amaya Perera', email:'amaya@example.com', phone:'077-111-2222' },
+    { id:2, name:'Kasun Silva', email:'kasun@example.com', phone:'071-333-4444' },
+    { id:3, name:'Nadeesha Fernando', email:'nadeesha@example.com', phone:'076-555-6666' }
+  ];
+
+  function paint(){
+    box.innerHTML = `
+      <div class="access-note">In Access this is a <b>Table</b> called “Customers”. Each row is a <b>Record</b>; each column is a <b>Field</b>.</div>
+      <div class="access-form">
+        <input type="text" id="aName" placeholder="Name"/>
+        <input type="email" id="aEmail" placeholder="Email"/>
+        <input type="text" id="aPhone" placeholder="Phone"/>
+        <button class="btn primary" id="aAdd">+ Add Record</button>
+      </div>
+      <table class="access-table">
+        <tr><th>ID <span class="field-tag">(AutoNumber)</span></th><th>Name <span class="field-tag">(Text)</span></th><th>Email <span class="field-tag">(Text)</span></th><th>Phone <span class="field-tag">(Text)</span></th><th></th></tr>
+        ${records.map(r=>`
+          <tr>
+            <td>${r.id}</td><td>${r.name}</td><td>${r.email}</td><td>${r.phone}</td>
+            <td class="del"><button class="btn icon" data-del="${r.id}">✕</button></td>
+          </tr>
+        `).join('')}
+      </table>
+    `;
+    box.querySelector('#aAdd').addEventListener('click', ()=>{
+      const name = box.querySelector('#aName').value.trim();
+      const email = box.querySelector('#aEmail').value.trim();
+      const phone = box.querySelector('#aPhone').value.trim();
+      if(!name){ showModal('Missing field','Please enter at least a Name before adding a record.'); return; }
+      records.push({ id:nextId++, name, email, phone });
+      paint();
+    });
+    box.querySelectorAll('[data-del]').forEach(b=>{
+      b.addEventListener('click', ()=>{
+        records = records.filter(r=>r.id !== parseInt(b.dataset.del,10));
+        paint();
+      });
+    });
+  }
+  paint();
+}
+
+/* ---------------------------------------------------------
+   TEAMS demo — simple chat with a canned auto-reply
+---------------------------------------------------------- */
+function renderTeams(box){
+  let messages = [
+    { who:'Classmate', text:'Hey! Ready for the Session 1 group task?', me:false },
+    { who:'You', text:'Yes, just reviewing the Word tabs now.', me:true }
+  ];
+  const replies = ['Great point! 👍', 'Got it, thanks!', 'Let’s discuss this in class.', 'Nice — noted in the chat.'];
+
+  function paint(){
+    box.innerHTML = `
+      <div class="chat-window" id="chatWindow">
+        ${messages.map(m=>`<div class="bubble ${m.me?'me':'them'}"><span class="who">${m.who}</span>${m.text}</div>`).join('')}
+      </div>
+      <div class="chat-input-row">
+        <input type="text" id="chatInput" placeholder="Type a message and press Enter..."/>
+        <button class="btn primary" id="chatSend">Send</button>
+      </div>
+    `;
+    const win = box.querySelector('#chatWindow');
+    win.scrollTop = win.scrollHeight;
+    function send(){
+      const inp = box.querySelector('#chatInput');
+      const text = inp.value.trim();
+      if(!text) return;
+      messages.push({ who:'You', text, me:true });
+      inp.value = '';
+      paint();
+      setTimeout(()=>{
+        messages.push({ who:'Classmate', text: replies[Math.floor(Math.random()*replies.length)], me:false });
+        paint();
+      }, 600);
+    }
+    box.querySelector('#chatSend').addEventListener('click', send);
+    box.querySelector('#chatInput').addEventListener('keydown', e=>{ if(e.key==='Enter') send(); });
+  }
+  paint();
+}
+
+/* ---------------------------------------------------------
+   ONENOTE demo — pages sidebar + free-form note area
+---------------------------------------------------------- */
+function renderOneNote(box){
+  let pages = [
+    { title:'Page 1', content:'Write your first note here...' },
+    { title:'Page 2', content:'Another page, another set of notes.' }
+  ];
+  let current = 0;
+
+  function paint(){
+    box.innerHTML = `
+      <div class="onenote-layout">
+        <div class="page-list" id="pageList">
+          ${pages.map((p,i)=>`<div class="page-item ${i===current?'active':''}" data-i="${i}">${p.title}</div>`).join('')}
+          <button class="btn" id="addPage">+ Add Page</button>
+        </div>
+        <div class="note-area" id="noteArea" contenteditable="true">${pages[current].content}</div>
+      </div>
+    `;
+    box.querySelectorAll('.page-item').forEach(el=>{
+      el.addEventListener('click', ()=>{ commit(); current = parseInt(el.dataset.i,10); paint(); });
+    });
+    box.querySelector('#addPage').addEventListener('click', ()=>{
+      commit();
+      pages.push({ title:`Page ${pages.length+1}`, content:'New page — start typing.' });
+      current = pages.length-1; paint();
+    });
+  }
+  function commit(){
+    const area = box.querySelector('#noteArea');
+    if(area) pages[current].content = area.innerHTML;
+  }
+  paint();
+}
+
+/* ---------------------------------------------------------
+   ONEDRIVE demo — mock file/folder grid + storage bar
+---------------------------------------------------------- */
+function renderOneDrive(box){
+  let items = [
+    { name:'Assignments', type:'folder' },
+    { name:'Session 1 Notes.docx', type:'file' },
+    { name:'Budget.xlsx', type:'file' },
+    { name:'Group Project', type:'folder' },
+    { name:'Class Photo.jpg', type:'file' }
+  ];
+
+  function paint(){
+    box.innerHTML = `
+      <div class="drive-toolbar">
+        <button class="btn primary" id="newFolder">+ New Folder</button>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:.72em;color:var(--muted);">2.1 GB of 5 GB used</span>
+          <div class="storage-bar"><div style="width:42%;"></div></div>
+        </div>
+      </div>
+      <div class="drive-grid" id="driveGrid">
+        ${items.map((it,i)=>`
+          <div class="drive-tile" data-i="${i}">
+            <span class="emoji">${it.type==='folder'?'📁':'📄'}</span>
+            <span>${it.name}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    box.querySelectorAll('.drive-tile').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const it = items[parseInt(el.dataset.i,10)];
+        if(it.type==='folder') showModal(it.name, 'This folder is empty. In real OneDrive, you could open it to see more files.');
+        else showModal(it.name, 'Preview: this is a mock file — in real OneDrive this would open the file online.');
+      });
+    });
+    box.querySelector('#newFolder').addEventListener('click', ()=>{
+      const name = prompt('Name your new folder:', 'New Folder');
+      if(name) { items.unshift({ name, type:'folder' }); paint(); }
+    });
+  }
+  paint();
+}
+
+/* ---------------------------------------------------------
+   Boot
+---------------------------------------------------------- */
+buildSidebar();
+buildPanel();
+</script>
+</body>
+</html>
